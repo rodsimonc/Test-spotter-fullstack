@@ -1,0 +1,17 @@
+# Production dependencies, pinned. Vercel installs this file for the Python function.
+# Test and lint tools live in backend/requirements-dev.txt.
+asgiref==3.12.1
+certifi==2026.7.22
+charset-normalizer==3.5.2
+dj-database-url==3.1.2
+Django==5.2.17
+djangorestframework==3.18.1
+idna==3.20
+psycopg==3.3.6
+psycopg-binary==3.3.6
+requests==2.34.2
+sqlparse==0.6.0
+# psycopg needs this on Python 3.12 only. The pin comes from `uv pip compile --python-version 3.12`.
+typing-extensions==4.16.0; python_version < "3.13"
+tzdata==2026.5
+urllib3==2.8.0

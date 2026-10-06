@@ -1,0 +1,121 @@
+### Request collection (VS Code REST Client, JetBrains HTTP Client)
+### Start the API first: python manage.py runserver (from backend/, with DJANGO_DEBUG=1).
+### Requests that change data need the CSRF token from request 1, kept in {{csrf}}.
+
+@base = http://127.0.0.1:8000/api
+
+### 0. Health check
+GET {{base}}/health
+
+### 1. Get the CSRF token (also sets the csrftoken cookie)
+# @name csrfToken
+GET {{base}}/auth/csrf
+
+@csrf = {{csrfToken.response.body.csrf}}
+
+### 2. Typeahead
+GET {{base}}/geocode/search?q=Memphis&limit=5
+
+### 3. Name a point (Kearney, Nebraska)
+GET {{base}}/geocode/reverse?lat=40.7&lon=-99.08
+
+### 4. Plan the example trip: Dallas, Memphis, Denver, 24 hours already used
+POST {{base}}/plan
+Content-Type: application/json
+
+{
+  "current": { "label": "Dallas, Texas, United States", "lat": 32.7767, "lon": -96.797 },
+  "pickup": { "label": "Memphis, Tennessee, United States", "lat": 35.1495, "lon": -90.049 },
+  "dropoff": { "label": "Denver, Colorado, United States", "lat": 39.7392, "lon": -104.9903 },
+  "cycle_used_hours": 24,
+  "departure": "2026-10-07T06:00",
+  "timezone": "America/Chicago",
+  "header": { "driver_name": "Sam Rivera", "carrier_name": "Rivera Freight", "truck_number": "101" }
+}
+
+### 5. Validation error: cycle hours over 70 -> 400 validation_error with fields
+POST {{base}}/plan
+Content-Type: application/json
+
+{
+  "current": { "label": "Dallas, TX", "lat": 32.7767, "lon": -96.797 },
+  "pickup": { "label": "Memphis, TN", "lat": 35.1495, "lon": -90.049 },
+  "dropoff": { "label": "Denver, CO", "lat": 39.7392, "lon": -104.9903 },
+  "cycle_used_hours": 95,
+  "departure": "2026-10-07T06:00",
+  "timezone": "America/Chicago"
+}
+
+### 6. A cycle that runs out: 60 hours used on a long trip -> plan includes a 34-hour restart
+POST {{base}}/plan
+Content-Type: application/json
+
+{
+  "current": { "label": "Los Angeles, California, United States", "lat": 34.0522, "lon": -118.2437 },
+  "pickup": { "label": "Phoenix, Arizona, United States", "lat": 33.4484, "lon": -112.074 },
+  "dropoff": { "label": "New York, New York, United States", "lat": 40.7128, "lon": -74.006 },
+  "cycle_used_hours": 60,
+  "departure": "2026-10-07T06:00",
+  "timezone": "America/Los_Angeles"
+}
+
+### 7. Create an account (signs you in; the session cookie is kept by the client)
+POST {{base}}/auth/register
+Content-Type: application/json
+X-CSRFToken: {{csrf}}
+
+{ "email": "driver@example.com", "password": "a-long-passphrase-123", "name": "Sam" }
+
+### 8. Sign in
+POST {{base}}/auth/login
+Content-Type: application/json
+X-CSRFToken: {{csrf}}
+
+{ "email": "driver@example.com", "password": "a-long-passphrase-123" }
+
+### 9. Who am I
+GET {{base}}/auth/me
+
+### 10. Save a trip (the server plans it again from `request`)
+# @name saved
+POST {{base}}/trips
+Content-Type: application/json
+X-CSRFToken: {{csrf}}
+
+{
+  "title": "Dallas to Denver via Memphis",
+  "request": {
+    "current": { "label": "Dallas, Texas, United States", "lat": 32.7767, "lon": -96.797 },
+    "pickup": { "label": "Memphis, Tennessee, United States", "lat": 35.1495, "lon": -90.049 },
+    "dropoff": { "label": "Denver, Colorado, United States", "lat": 39.7392, "lon": -104.9903 },
+    "cycle_used_hours": 24,
+    "departure": "2026-10-07T06:00",
+    "timezone": "America/Chicago"
+  }
+}
+
+@tripId = {{saved.response.body.id}}
+
+### 11. List my trips
+GET {{base}}/trips?limit=20&offset=0
+
+### 12. Open one trip
+GET {{base}}/trips/{{tripId}}
+
+### 13. Rename it
+PATCH {{base}}/trips/{{tripId}}
+Content-Type: application/json
+X-CSRFToken: {{csrf}}
+
+{ "title": "Renamed trip" }
+
+### 14. Delete it
+DELETE {{base}}/trips/{{tripId}}
+X-CSRFToken: {{csrf}}
+
+### 15. Someone else's trip, or one that doesn't exist -> 404
+GET {{base}}/trips/00000000-0000-4000-8000-000000000000
+
+### 16. Sign out
+POST {{base}}/auth/logout
+X-CSRFToken: {{csrf}}

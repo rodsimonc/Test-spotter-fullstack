@@ -1,0 +1,522 @@
+openapi: 3.0.3
+info:
+  title: ELD Trip Planner API
+  version: 0.1.0
+  description: |
+    Plans a truck trip under the FMCSA hours-of-service rules and returns the route, the stops and one
+    daily log sheet per day. Planning and geocoding work without an account. Saved trips need one.
+
+    Unsafe requests (POST, PATCH, DELETE) need the `X-CSRFToken` header. Call `GET /api/auth/csrf` first.
+    Field-by-field notes are in `docs/api-contract.md`. Error codes are in `ERROR-CONTRACT.md`.
+servers:
+  - url: http://127.0.0.1:8000
+    description: Local Django
+  - url: https://test-spotter-fullstack.vercel.app
+    description: Production (update after the first deploy)
+tags:
+  - name: Health
+  - name: Geocoding
+  - name: Planning
+  - name: Auth
+  - name: Trips
+
+paths:
+  /api/health:
+    get:
+      tags: [Health]
+      summary: Liveness check
+      responses:
+        '200':
+          description: Server is up
+          content:
+            application/json:
+              schema: { type: object, properties: { status: { type: string, example: ok } } }
+
+  /api/geocode/search:
+    get:
+      tags: [Geocoding]
+      summary: Place typeahead (Photon)
+      parameters:
+        - { name: q, in: query, required: true, schema: { type: string, minLength: 2, maxLength: 120 } }
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 8, default: 5 } }
+        - { name: lat, in: query, description: Bias results toward this point, schema: { type: number } }
+        - { name: lon, in: query, schema: { type: number } }
+      responses:
+        '200':
+          description: Matching places. An empty list is a valid answer.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results: { type: array, items: { $ref: '#/components/schemas/GeocodeResult' } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/Throttled' }
+        '502': { $ref: '#/components/responses/UpstreamError' }
+
+  /api/geocode/reverse:
+    get:
+      tags: [Geocoding]
+      summary: Name a point picked on the map
+      description: Tries Nominatim, falls back to the bundled town list, then to coordinates.
+      parameters:
+        - { name: lat, in: query, required: true, schema: { type: number, minimum: -90, maximum: 90 } }
+        - { name: lon, in: query, required: true, schema: { type: number, minimum: -180, maximum: 180 } }
+      responses:
+        '200':
+          description: The named place
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  place: { $ref: '#/components/schemas/Place' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '429': { $ref: '#/components/responses/Throttled' }
+
+  /api/plan:
+    post:
+      tags: [Planning]
+      summary: Plan a trip
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PlanRequest' }
+      responses:
+        '200':
+          description: The route, stops, segments and daily logs
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PlanResponse' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+        '429': { $ref: '#/components/responses/Throttled' }
+        '502': { $ref: '#/components/responses/UpstreamError' }
+
+  /api/auth/csrf:
+    get:
+      tags: [Auth]
+      summary: Set the CSRF cookie and return the token
+      responses:
+        '200':
+          description: Token
+          content:
+            application/json:
+              schema: { type: object, properties: { csrf: { type: string } } }
+
+  /api/auth/me:
+    get:
+      tags: [Auth]
+      summary: The signed-in user, or null
+      responses:
+        '200':
+          description: Always 200
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user: { nullable: true, allOf: [{ $ref: '#/components/schemas/User' }] }
+
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Create an account and sign in
+      security: [{ csrf: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8, format: password }
+                name: { type: string, maxLength: 120 }
+      responses:
+        '201':
+          description: Account created, session started
+          content:
+            application/json:
+              schema: { type: object, properties: { user: { $ref: '#/components/schemas/User' } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/Throttled' }
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Sign in
+      security: [{ csrf: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, format: password }
+      responses:
+        '200':
+          description: Signed in
+          content:
+            application/json:
+              schema: { type: object, properties: { user: { $ref: '#/components/schemas/User' } } }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '429': { $ref: '#/components/responses/Throttled' }
+
+  /api/auth/logout:
+    post:
+      tags: [Auth]
+      summary: Sign out
+      security: [{ csrf: [] }]
+      responses:
+        '204': { description: Signed out }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/trips:
+    get:
+      tags: [Trips]
+      summary: List the signed-in user's saved trips, newest first
+      security: [{ session: [] }]
+      parameters:
+        - { name: limit, in: query, schema: { type: integer, minimum: 1, maximum: 100, default: 20 } }
+        - { name: offset, in: query, schema: { type: integer, minimum: 0, default: 0 } }
+      responses:
+        '200':
+          description: A page of trips
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results: { type: array, items: { $ref: '#/components/schemas/TripSummary' } }
+                  count: { type: integer }
+        '401': { $ref: '#/components/responses/NotAuthenticated' }
+    post:
+      tags: [Trips]
+      summary: Save a trip
+      description: The server plans the trip again from `request`, so the stored result is never client-supplied.
+      security: [{ session: [], csrf: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [request]
+              properties:
+                title: { type: string, maxLength: 120 }
+                request: { $ref: '#/components/schemas/PlanRequest' }
+      responses:
+        '201':
+          description: Saved
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Trip' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/NotAuthenticated' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+
+  /api/trips/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [Trips]
+      summary: Open one saved trip
+      security: [{ session: [] }]
+      responses:
+        '200':
+          description: The trip with its stored result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Trip' }
+        '401': { $ref: '#/components/responses/NotAuthenticated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Trips]
+      summary: Rename a trip
+      security: [{ session: [], csrf: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title: { type: string, minLength: 1, maxLength: 120 }
+      responses:
+        '200':
+          description: Renamed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Trip' }
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '401': { $ref: '#/components/responses/NotAuthenticated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    delete:
+      tags: [Trips]
+      summary: Delete a trip
+      security: [{ session: [], csrf: [] }]
+      responses:
+        '204': { description: Deleted }
+        '401': { $ref: '#/components/responses/NotAuthenticated' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+  securitySchemes:
+    session:
+      type: apiKey
+      in: cookie
+      name: sessionid
+      description: HttpOnly session cookie set by login or register.
+    csrf:
+      type: apiKey
+      in: header
+      name: X-CSRFToken
+      description: Token from GET /api/auth/csrf. Required on POST, PATCH and DELETE.
+
+  responses:
+    ValidationError:
+      description: Bad or missing input. `error.fields` lists what.
+      content: { application/json: { schema: { $ref: '#/components/schemas/ErrorBody' } } }
+    NotAuthenticated:
+      description: Sign in first.
+      content: { application/json: { schema: { $ref: '#/components/schemas/ErrorBody' } } }
+    Forbidden:
+      description: The CSRF or session check failed.
+      content: { application/json: { schema: { $ref: '#/components/schemas/ErrorBody' } } }
+    NotFound:
+      description: No such trip, or it belongs to someone else.
+      content: { application/json: { schema: { $ref: '#/components/schemas/ErrorBody' } } }
+    Unprocessable:
+      description: "`no_route`, `route_too_long`, `plan_failed`, `trip_limit_reached` or `trip_too_large`."
+      content: { application/json: { schema: { $ref: '#/components/schemas/ErrorBody' } } }
+    Throttled:
+      description: Too many requests.
+      headers:
+        Retry-After: { schema: { type: integer }, description: Seconds to wait }
+      content: { application/json: { schema: { $ref: '#/components/schemas/ErrorBody' } } }
+    UpstreamError:
+      description: OSRM, Photon or Nominatim failed or timed out.
+      content: { application/json: { schema: { $ref: '#/components/schemas/ErrorBody' } } }
+
+  schemas:
+    ErrorBody:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string, example: validation_error }
+            message: { type: string }
+            fields:
+              type: object
+              additionalProperties: { type: array, items: { type: string } }
+
+    Place:
+      type: object
+      required: [label, lat, lon]
+      properties:
+        label: { type: string, maxLength: 200, example: 'Dallas, Texas, United States' }
+        lat: { type: number, minimum: -90, maximum: 90 }
+        lon: { type: number, minimum: -180, maximum: 180 }
+
+    GeocodeResult:
+      allOf:
+        - $ref: '#/components/schemas/Place'
+        - type: object
+          properties:
+            detail: { type: string, example: 'Texas, United States' }
+
+    LogHeader:
+      type: object
+      description: Free text printed on the sheet header. Every field is optional, 120 characters at most.
+      properties:
+        driver_name: { type: string }
+        co_driver_name: { type: string }
+        carrier_name: { type: string }
+        main_office_address: { type: string }
+        home_terminal_address: { type: string }
+        truck_number: { type: string }
+        trailer_number: { type: string }
+        shipper: { type: string }
+        commodity: { type: string }
+        shipping_doc_no: { type: string }
+
+    PlanRequest:
+      type: object
+      required: [current, pickup, dropoff, cycle_used_hours, departure, timezone]
+      properties:
+        current: { $ref: '#/components/schemas/Place' }
+        pickup: { $ref: '#/components/schemas/Place' }
+        dropoff: { $ref: '#/components/schemas/Place' }
+        cycle_used_hours: { type: number, minimum: 0, maximum: 70, example: 24 }
+        departure: { type: string, description: Local time at the home terminal, no offset., example: '2026-10-07T06:00' }
+        timezone: { type: string, description: IANA zone of the home terminal., example: America/Chicago }
+        header: { $ref: '#/components/schemas/LogHeader' }
+
+    PlanResponse:
+      type: object
+      properties:
+        request: { $ref: '#/components/schemas/PlanRequest' }
+        summary:
+          type: object
+          properties:
+            distance_miles: { type: number }
+            driving_minutes: { type: integer }
+            on_duty_minutes: { type: integer }
+            elapsed_minutes: { type: integer }
+            depart_at: { type: string, format: date-time }
+            arrive_at: { type: string, format: date-time }
+            days: { type: integer }
+            fuel_stops: { type: integer }
+            breaks: { type: integer }
+            rests: { type: integer }
+            restarts: { type: integer }
+            cycle_used_start_hours: { type: number }
+            cycle_used_end_hours: { type: number }
+            legs:
+              type: array
+              items:
+                type: object
+                properties:
+                  from: { type: string, enum: [current, pickup] }
+                  to: { type: string, enum: [pickup, dropoff] }
+                  distance_miles: { type: number }
+                  duration_minutes: { type: integer }
+                  osrm_duration_minutes: { type: integer }
+        route:
+          type: object
+          properties:
+            geometry:
+              type: array
+              description: Simplified polyline as [lat, lon] pairs.
+              items: { type: array, minItems: 2, maxItems: 2, items: { type: number } }
+            bounds: { type: array, description: '[[south, west], [north, east]]', items: { type: array, items: { type: number } } }
+            leg_end_indices: { type: array, minItems: 2, maxItems: 2, items: { type: integer } }
+        stops: { type: array, items: { $ref: '#/components/schemas/Stop' } }
+        segments: { type: array, items: { $ref: '#/components/schemas/Segment' } }
+        logs: { type: array, items: { $ref: '#/components/schemas/DailyLog' } }
+        assumptions: { type: array, items: { type: string } }
+        warnings: { type: array, items: { type: string } }
+
+    DutyStatus:
+      type: string
+      enum: [off_duty, sleeper, driving, on_duty]
+
+    Stop:
+      type: object
+      properties:
+        id: { type: string }
+        kind: { type: string, enum: [start, pickup, dropoff, fuel, break, rest, restart, end] }
+        title: { type: string }
+        place: { type: string, example: 'Kearney, NE' }
+        lat: { type: number }
+        lon: { type: number }
+        mile: { type: number }
+        arrive_at: { type: string, format: date-time }
+        depart_at: { type: string, format: date-time }
+        duration_minutes: { type: integer }
+        day: { type: integer, description: 1-based log day }
+        note: { type: string }
+
+    Segment:
+      type: object
+      properties:
+        id: { type: integer }
+        status: { $ref: '#/components/schemas/DutyStatus' }
+        kind: { type: string, enum: [drive, pickup, dropoff, fuel, break, rest, restart] }
+        start_at: { type: string, format: date-time }
+        end_at: { type: string, format: date-time }
+        minutes: { type: integer }
+        start_mile: { type: number }
+        end_mile: { type: number }
+        place: { type: string }
+        note: { type: string }
+
+    DailyLog:
+      type: object
+      properties:
+        day: { type: integer }
+        date: { type: string, format: date }
+        from_place: { type: string }
+        to_place: { type: string }
+        total_miles_driving: { type: number }
+        total_mileage_today: { type: number }
+        entries:
+          type: array
+          description: Covers minute 0 to 1440 with no gaps.
+          items:
+            type: object
+            properties:
+              status: { $ref: '#/components/schemas/DutyStatus' }
+              kind: { type: string }
+              start_min: { type: integer, minimum: 0, maximum: 1440 }
+              end_min: { type: integer, minimum: 0, maximum: 1440 }
+              place: { type: string }
+              note: { type: string }
+        totals:
+          type: object
+          description: Minutes per status. The four values add up to 1440.
+          properties:
+            off_duty: { type: integer }
+            sleeper: { type: integer }
+            driving: { type: integer }
+            on_duty: { type: integer }
+        remarks:
+          type: array
+          items:
+            type: object
+            properties:
+              minute: { type: integer }
+              place: { type: string }
+              note: { type: string }
+        recap:
+          type: object
+          properties:
+            on_duty_today_minutes: { type: integer }
+            a_minutes: { type: integer, description: On duty, last 8 days including today }
+            b_minutes: { type: integer, description: 70 hours minus A, never below 0 }
+            c_minutes: { type: integer, description: On duty, last 7 days including today }
+            restart_completed: { type: boolean }
+        header: { $ref: '#/components/schemas/LogHeader' }
+        vehicle: { type: string }
+
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        email: { type: string, format: email }
+        name: { type: string }
+
+    TripSummary:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        created_at: { type: string, format: date-time }
+        current_label: { type: string }
+        pickup_label: { type: string }
+        dropoff_label: { type: string }
+        distance_miles: { type: number }
+        days: { type: integer }
+        depart_at: { type: string, format: date-time }
+        arrive_at: { type: string, format: date-time }
+
+    Trip:
+      allOf:
+        - $ref: '#/components/schemas/TripSummary'
+        - type: object
+          properties:
+            request: { $ref: '#/components/schemas/PlanRequest' }
+            result: { $ref: '#/components/schemas/PlanResponse' }
