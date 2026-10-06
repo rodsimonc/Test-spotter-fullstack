@@ -36,10 +36,12 @@ jobs:
         run: |
           base="https://github.com/gitleaks/gitleaks/releases/download/v${VERSION}"
           cd "$RUNNER_TEMP"
-          curl -sSfL -o gitleaks.tar.gz "${base}/gitleaks_${VERSION}_linux_x64.tar.gz"
+          # Keep the original file name: the checksum file refers to it.
+          archive="gitleaks_${VERSION}_linux_x64.tar.gz"
+          curl -sSfL -o "$archive" "${base}/${archive}"
           curl -sSfL -o checksums.txt "${base}/gitleaks_${VERSION}_checksums.txt"
           sha256sum --check --ignore-missing checksums.txt
-          tar -xzf gitleaks.tar.gz gitleaks
+          tar -xzf "$archive" gitleaks
 
       - name: Scan the full history
         run: '"$RUNNER_TEMP/gitleaks" detect --source . --redact --verbose --exit-code 2'
