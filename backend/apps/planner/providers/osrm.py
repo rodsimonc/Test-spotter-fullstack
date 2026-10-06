@@ -9,7 +9,7 @@ from typing import Any
 from django.conf import settings
 
 from apps.common.errors import NoRouteError, UpstreamError
-from apps.planner.types import RouteData, RouteLeg
+from apps.planner.types import RawStep, RouteData, RouteLeg
 
 from . import http
 
@@ -69,6 +69,79 @@ def parse_route(payload: Any) -> RouteData:
         leg_end_indices=(first_end, len(coordinates) - 1),
         legs=(legs[0], legs[1]),
     )
+
+
+def fetch_steps(waypoints: Sequence[Waypoint]) -> tuple[tuple[RawStep, ...], tuple[RawStep, ...]]:
+    """Ask for the turn list of the same route, one tuple of steps per leg.
+
+    A second request, so the geometry call stays small. It is best effort: it never retries, it
+    gets a shorter read timeout, and the caller treats `UpstreamError` as "no directions".
+    """
+    reply = http.get_json(
+        route_url(waypoints),
+        service=SERVICE,
+        params={"overview": "false", "steps": "true", "geometries": "polyline", "annotations": "false"},
+        max_bytes=http.OSRM_STEPS_MAX_BYTES,
+        timeout=(http.CONNECT_TIMEOUT_SECONDS, http.STEPS_READ_TIMEOUT_SECONDS),
+        retries=0,
+    )
+    if reply.status != 200:
+        raise UpstreamError("The routing service didn't give a turn list.")
+    return parse_steps(reply.data)
+
+
+def parse_steps(payload: Any) -> tuple[tuple[RawStep, ...], tuple[RawStep, ...]]:
+    """Read the steps of both legs. A step that can't be read is skipped, a reply that can't be read raises."""
+    if not isinstance(payload, dict) or payload.get("code") != "Ok":
+        raise UpstreamError("The routing service sent a turn list we couldn't use.")
+    routes = payload.get("routes")
+    legs = routes[0].get("legs") if isinstance(routes, list) and routes and isinstance(routes[0], dict) else None
+    if not isinstance(legs, list) or len(legs) != 2 or not all(isinstance(leg, dict) for leg in legs):
+        raise _unreadable()
+    first, second = (_read_steps(leg.get("steps")) for leg in legs)
+    return first, second
+
+
+def _read_steps(raw: Any) -> tuple[RawStep, ...]:
+    if not isinstance(raw, list):
+        return ()
+    steps = (_read_step(item) for item in raw)
+    return tuple(step for step in steps if step is not None)
+
+
+def _read_step(raw: Any) -> RawStep | None:
+    if not isinstance(raw, dict):
+        return None
+    metres = raw.get("distance")
+    if not _is_number(metres) or metres < 0:
+        return None
+    maneuver = raw.get("maneuver")
+    if not isinstance(maneuver, dict):
+        maneuver = {}
+    lat, lon = _read_location(maneuver.get("location"))
+    bearing = maneuver.get("bearing_after")
+    return RawStep(
+        distance_miles=metres / METERS_PER_MILE,
+        name=_text(raw.get("name")),
+        ref=_text(raw.get("ref")),
+        maneuver=_text(maneuver.get("type")),
+        lat=lat,
+        lon=lon,
+        bearing_after=float(bearing) if _is_number(bearing) else None,
+    )
+
+
+def _read_location(location: Any) -> tuple[float | None, float | None]:
+    if not isinstance(location, list | tuple) or len(location) < 2:
+        return None, None
+    lon, lat = location[0], location[1]
+    if not (_is_number(lon) and _is_number(lat)) or abs(lat) > 90 or abs(lon) > 180:
+        return None, None
+    return float(lat), float(lon)
+
+
+def _text(value: Any) -> str:
+    return value if isinstance(value, str) else ""
 
 
 def _unreadable() -> UpstreamError:

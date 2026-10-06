@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { CalendarClock, FileText, ListOrdered, Route } from 'lucide-react'
+import { CalendarClock, FileText, ListOrdered, Milestone, Route } from 'lucide-react'
 import clsx from 'clsx'
 import type { PlanResponse } from '@/api/types'
 import { panelId, tabId } from '@/components/ui/tabIds'
@@ -7,13 +7,15 @@ import { Tabs, type TabItem } from '@/components/ui/Tabs'
 import { LogViewer } from '@/features/logs'
 import { routeTitle } from '@/lib/format'
 import { formatDateTime } from '@/lib/time'
+import type { MapPoint } from '@/features/map/TripMap'
 import { ActionRow } from './ActionRow'
+import { Directions } from './Directions'
 import { Itinerary } from './Itinerary'
 import { WarningsBanner } from './ResultStates'
 import { StatsStrip } from './StatsStrip'
 import { SummaryPanel } from './SummaryPanel'
 
-export type ResultsTab = 'itinerary' | 'logs' | 'summary'
+export type ResultsTab = 'itinerary' | 'directions' | 'logs' | 'summary'
 
 const ID_BASE = 'results'
 
@@ -23,6 +25,12 @@ const TABS: TabItem<ResultsTab>[] = [
     label: 'Itinerary',
     testId: 'tab-itinerary',
     icon: <ListOrdered aria-hidden="true" className="size-4" />,
+  },
+  {
+    id: 'directions',
+    label: 'Directions',
+    testId: 'tab-directions',
+    icon: <Milestone aria-hidden="true" className="size-4" />,
   },
   {
     id: 'logs',
@@ -43,6 +51,7 @@ interface ResultsProps {
   tab: ResultsTab
   onTabChange: (tab: ResultsTab) => void
   onSelectStop: (id: string) => void
+  onSelectPoint: (point: MapPoint) => void
   saving: boolean
   saved: boolean
   onSave: () => void
@@ -53,6 +62,7 @@ export function Results({
   tab,
   onTabChange,
   onSelectStop,
+  onSelectPoint,
   saving,
   saved,
   onSave,
@@ -114,6 +124,18 @@ export function Results({
           className="pt-5 print:hidden"
         >
           <Itinerary plan={plan} onSelectStop={onSelectStop} />
+        </div>
+
+        <div
+          role="tabpanel"
+          id={panelId(ID_BASE, 'directions')}
+          aria-labelledby={tabId(ID_BASE, 'directions')}
+          data-testid="panel-directions"
+          hidden={tab !== 'directions'}
+          tabIndex={0}
+          className="pt-5 print:hidden"
+        >
+          <Directions directions={plan.directions} onSelectPoint={onSelectPoint} />
         </div>
 
         {/* Stays mounted on every tab so the print sheets exist whichever tab is showing. */}

@@ -407,8 +407,57 @@ components:
         stops: { type: array, items: { $ref: '#/components/schemas/Stop' } }
         segments: { type: array, items: { $ref: '#/components/schemas/Segment' } }
         logs: { type: array, items: { $ref: '#/components/schemas/DailyLog' } }
+        directions:
+          type: array
+          description: >-
+            Road-by-road directions, condensed to one line per stretch of road. Always present.
+            Two legs (current to pickup, pickup to dropoff), or an empty list when the router gave
+            no steps or the second request for them failed. An empty list is not an error and adds
+            no entry to `warnings`.
+          minItems: 0
+          maxItems: 2
+          items: { $ref: '#/components/schemas/DirectionLeg' }
         assumptions: { type: array, items: { type: string } }
         warnings: { type: array, items: { type: string } }
+
+    DirectionStep:
+      type: object
+      description: >-
+        One line of the directions. The first line of a leg is `depart`, the last is `arrive`
+        (distance 0), and every line between is `road`.
+      required: [kind, instruction, road, heading, distance_miles, mile, lat, lon]
+      properties:
+        kind: { type: string, enum: [depart, road, arrive] }
+        instruction: { type: string, description: Plain text. Never HTML., example: Take I-40 W }
+        road:
+          type: string
+          description: Road reference or name, such as `I-40`, `US-287` or `Main St`. Empty when the router gave none.
+          example: I-40
+        heading:
+          type: string
+          description: Compass heading of travel. Empty on `arrive`.
+          enum: ['', N, NE, E, SE, S, SW, W, NW]
+        distance_miles: { type: number, description: Length of this stretch, to 0.1 mile. 0 on `arrive`., example: 212.4 }
+        mile: { type: number, description: Miles from the start of the whole trip to where the stretch begins. Same scale as `Stop.mile`., example: 340 }
+        lat: { type: number, description: Where the stretch begins. }
+        lon: { type: number }
+
+    DirectionLeg:
+      type: object
+      required: [from, to, title, distance_miles, steps]
+      properties:
+        from: { type: string, enum: [current, pickup] }
+        to: { type: string, enum: [pickup, dropoff] }
+        title: { type: string, description: 'The first part of each place label, for example "Dallas to Memphis".', example: Dallas to Memphis }
+        distance_miles:
+          type: number
+          description: The same number as the matching `summary.legs[].distance_miles`. The steps add up to it.
+        steps:
+          type: array
+          description: At most 120 lines, counting `depart` and `arrive`.
+          minItems: 2
+          maxItems: 120
+          items: { $ref: '#/components/schemas/DirectionStep' }
 
     DutyStatus:
       type: string

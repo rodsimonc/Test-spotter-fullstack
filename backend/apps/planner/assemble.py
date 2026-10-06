@@ -18,6 +18,7 @@ from datetime import UTC, datetime, timedelta, timezone
 from typing import Any
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
+from . import directions
 from .gazetteer import describe_place
 from .hos import notes
 from .hos.constants import (
@@ -103,6 +104,7 @@ def build_plan(req: PlanRequestData, route: RouteData) -> dict[str, Any]:
         "stops": stops,
         "segments": segments,
         "logs": logs,
+        "directions": directions.render(route.directions, req.current.label, req.pickup.label, req.dropoff.label),
         "assumptions": _assumptions(zone, departure),
         "warnings": _warnings(req, sim, cycle_minutes, legs[0].miles, n_days, zone, departure, change),
     }

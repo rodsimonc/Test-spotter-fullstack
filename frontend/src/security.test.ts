@@ -65,7 +65,9 @@ describe('app source', () => {
   it('gives Leaflet marker icons an element, never an HTML string', () => {
     const mapSources = files.filter(([path]) => path.includes('/features/map/'))
     const htmlOptions = mapSources.flatMap(([, text]) => text.match(/\bhtml\s*:\s*[^,\n]+/g) ?? [])
-    expect(htmlOptions).toEqual(['html: element'])
+    // Every marker face is a detached element. A string here would go through innerHTML.
+    expect(htmlOptions.length).toBeGreaterThan(0)
+    expect(htmlOptions.filter((option) => option !== 'html: element')).toEqual([])
   })
 
   it('keeps every network call in the one client that sets credentials and the CSRF header', () => {

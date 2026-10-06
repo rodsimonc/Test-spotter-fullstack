@@ -13,7 +13,7 @@ from django.utils import timezone
 from apps.trips.models import Trip
 from tests.support import ts_contract
 from tests.support.contract import assert_error, assert_plan_response
-from tests.support.osrm import OSRM_ROUTE, register_osrm
+from tests.support.osrm import OSRM_ROUTE, register_osrm, route_calls, steps_calls
 
 LIST = "/api/trips"
 
@@ -130,7 +130,26 @@ def test_saving_right_after_planning_reuses_the_cached_route(auth_api, rsps, pla
     register_osrm(rsps)
     auth_api.post("/api/plan", plan_payload, format="json")
     auth_api.post(LIST, {"request": plan_payload}, format="json")
-    assert len(rsps.calls) == 1, "the save should not ask the router a second time"
+    assert len(route_calls(rsps)) == 1, "the save should not ask the router a second time"
+    assert len(steps_calls(rsps)) == 1, "or for the turn list"
+
+
+def test_a_trip_saved_before_directions_existed_reads_back_with_an_empty_list(auth_api, create_trip):
+    trip = create_trip(auth_api)
+    stored = Trip.objects.get(pk=trip["id"])
+    stored.result = {k: v for k, v in stored.result.items() if k != "directions"}
+    stored.save()
+
+    read = auth_api.get(f"{LIST}/{trip['id']}").json()
+
+    assert read["result"]["directions"] == []
+    ts_contract.load().assert_matches(read, "Trip")
+
+
+def test_a_saved_trip_reads_back_with_the_directions_it_was_saved_with(auth_api, create_trip):
+    trip = create_trip(auth_api)
+    assert len(trip["result"]["directions"]) == 2
+    assert auth_api.get(f"{LIST}/{trip['id']}").json()["result"]["directions"] == trip["result"]["directions"]
 
 
 def test_create_is_not_available_signed_out(api, osrm, plan_payload):

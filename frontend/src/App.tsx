@@ -8,7 +8,7 @@ import { AppFooter } from '@/components/layout/AppFooter'
 import { AppHeader } from '@/components/layout/AppHeader'
 import { useToast } from '@/components/ui/Toast'
 import { AuthDialog, type AuthMode } from '@/features/auth/AuthDialog'
-import { TripMap, type StopFocusRequest } from '@/features/map/TripMap'
+import { TripMap, type MapFocusRequest, type MapPoint } from '@/features/map/TripMap'
 import { PlanError, ResultsLoading } from '@/features/results/ResultStates'
 import { Results, type ResultsTab } from '@/features/results/Results'
 import { usePlanningMessage } from '@/features/results/usePlanningMessage'
@@ -56,7 +56,7 @@ export function App() {
   const [savedTripId, setSavedTripId] = useState<string | null>(null)
   const [tab, setTab] = useState<ResultsTab>('itinerary')
   const [pickTarget, setPickTarget] = useState<PlaceKey | null>(null)
-  const [focus, setFocus] = useState<StopFocusRequest | null>(null)
+  const [focus, setFocus] = useState<MapFocusRequest | null>(null)
   const [auth, setAuth] = useState<{ mode: AuthMode; reason?: string } | null>(null)
   const [tripsOpen, setTripsOpen] = useState(false)
   const mapPanelRef = useRef<HTMLDivElement>(null)
@@ -147,6 +147,11 @@ export function App() {
 
   function selectStop(id: string) {
     setFocus((current) => ({ id, nonce: (current?.nonce ?? 0) + 1 }))
+    mapPanelRef.current?.scrollIntoView(scrollOptions('nearest'))
+  }
+
+  function selectPoint(point: MapPoint) {
+    setFocus((current) => ({ point, nonce: (current?.nonce ?? 0) + 1 }))
     mapPanelRef.current?.scrollIntoView(scrollOptions('nearest'))
   }
 
@@ -296,6 +301,7 @@ export function App() {
                 tab={tab}
                 onTabChange={setTab}
                 onSelectStop={selectStop}
+                onSelectPoint={selectPoint}
                 saving={saveTrip.isPending}
                 saved={savedTripId !== null}
                 onSave={onSave}

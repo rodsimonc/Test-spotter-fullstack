@@ -83,6 +83,21 @@ export const NOMINATIM_FAIL_POINT = { lat: 31.0, lon: -92.0 }
 export const NOMINATIM_EMPTY_POINT = { lat: 28.0, lon: -45.0 }
 
 /**
+ * A route request that asks for steps and passes through this point answers 400 TooBig. The
+ * plain route request for the same points still answers normally, so a plan succeeds and its
+ * directions come back empty. Near Amarillo, Texas.
+ */
+export const STEPS_FAIL_POINT = { lat: 35.2, lon: -101.8 }
+
+/**
+ * A steps request that passes through this point names the street next to it with HTML. Nothing
+ * upstream breaks, but every layer that shows a road name has to treat it as text. Near Oklahoma
+ * City.
+ */
+export const HOSTILE_ROAD_POINT = { lat: 35.47, lon: -97.52 }
+export const HOSTILE_ROAD_NAME = '<img src=x onerror="window.__xss=1">Pwned Parkway'
+
+/**
  * @param {number} lat
  * @param {number} lon
  * @param {{lat: number, lon: number}} point

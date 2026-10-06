@@ -104,6 +104,7 @@ Both      scripts/dev.ps1, dev.sh     Django and Vite together
 - **Drive time?** The slower of OSRM's estimate and distance at 60 mph.
 - **Overnight rest?** 10 hours in the sleeper berth. A 34-hour restart is logged Off Duty and is inserted automatically when the cycle runs out.
 - **Fuel?** 30 minutes on duty, at least every 1,000 miles. No other stops are added.
+- **Directions?** Condensed by road from a second, best-effort OSRM steps request. A failure returns an empty list and never fails the plan. The condensed lines are cached with the route.
 - **Time zone?** The home terminal zone, with its UTC offset at departure held for the whole trip, so every sheet is 24 hours.
 - **Accounts?** Django sessions with email and password. Planning, the map and the PDF work signed out. Saving trips needs an account.
 - **Share links?** The request is encoded in the URL. No database row, no account.

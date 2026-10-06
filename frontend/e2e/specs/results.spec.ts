@@ -11,8 +11,8 @@ test.describe('results tabs', () => {
     plan = await planExample(page)
   })
 
-  test('switches between itinerary, daily logs and summary', async ({ page }) => {
-    const tabs = ['itinerary', 'logs', 'summary'] as const
+  test('switches between itinerary, directions, daily logs and summary', async ({ page }) => {
+    const tabs = ['itinerary', 'directions', 'logs', 'summary'] as const
     for (const shown of tabs) {
       await openTab(page, shown)
       for (const other of tabs.filter((t) => t !== shown)) {
@@ -69,7 +69,7 @@ test.describe('results tabs', () => {
   })
 
   test('shows the stats strip on every tab', async ({ page }) => {
-    for (const tab of ['logs', 'summary', 'itinerary'] as const) {
+    for (const tab of ['directions', 'logs', 'summary', 'itinerary'] as const) {
       await openTab(page, tab)
       await expect(page.getByTestId('stats-strip')).toBeVisible()
     }

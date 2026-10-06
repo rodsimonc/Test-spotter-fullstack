@@ -172,6 +172,33 @@ export interface DailyLog {
   vehicle: string
 }
 
+/** One line of the condensed directions: a stretch on one road, or the arrival at the end of a leg. */
+export interface DirectionStep {
+  kind: 'depart' | 'road' | 'arrive'
+  /** Plain text, for example "Head south on Main St", "Take I-40 W" or "Arrive at Memphis". */
+  instruction: string
+  /** Road reference or name, such as "I-40", "US-287" or "Main St". Empty when OSRM gives none. */
+  road: string
+  /** Compass heading of travel: N, NE, E, SE, S, SW, W or NW. Empty on arrival. */
+  heading: string
+  /** Length of this stretch. 0 for the arrival line. */
+  distance_miles: number
+  /** Miles from the start of the whole trip to where this stretch begins. */
+  mile: number
+  /** Where the stretch begins. */
+  lat: number
+  lon: number
+}
+
+export interface DirectionLeg {
+  from: 'current' | 'pickup'
+  to: 'pickup' | 'dropoff'
+  /** "Dallas to Memphis": the first part of each place label. */
+  title: string
+  distance_miles: number
+  steps: DirectionStep[]
+}
+
 export interface PlanResponse {
   request: PlanRequest
   summary: PlanSummary
@@ -179,6 +206,8 @@ export interface PlanResponse {
   stops: Stop[]
   segments: Segment[]
   logs: DailyLog[]
+  /** Condensed road-by-road directions. Empty when the router gave no steps. */
+  directions: DirectionLeg[]
   assumptions: string[]
   warnings: string[]
 }

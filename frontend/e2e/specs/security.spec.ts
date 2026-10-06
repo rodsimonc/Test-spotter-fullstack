@@ -66,7 +66,7 @@ test.describe('hostile text stays text', () => {
 
     await expect(field(page, 'current')).toHaveValue(current)
     await expect(page.locator('#results-title')).toContainText(HOSTILE_IMG)
-    for (const tab of ['logs', 'summary', 'itinerary'] as const) {
+    for (const tab of ['directions', 'logs', 'summary', 'itinerary'] as const) {
       await openTab(page, tab)
       await injection.expectClean()
     }

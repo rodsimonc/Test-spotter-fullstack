@@ -6,14 +6,25 @@ import type { Place, PlanResponse } from '@/api/types'
 import type { PlaceKey } from '@/features/trip-form/formState'
 import { MapLegend } from './MapLegend'
 import { EmptyOverlay, PickBanner, PlanningChip } from './MapOverlays'
+import { PointPulse } from './PointPulse'
 import { PlacePin, StopMarker } from './StopMarker'
 import { ROUTE_COLORS } from './stopKinds'
 
-export interface StopFocusRequest {
-  id: string
-  /** Changes on every click so choosing the same stop twice still pans. */
-  nonce: number
+export interface MapPoint {
+  lat: number
+  lon: number
 }
+
+/**
+ * Asks the map to move. Give a stop `id` to open its popup, or a `point` to pan there and mark it
+ * with a pulse ring (a direction line has no stop to open). `nonce` changes on every click so
+ * choosing the same stop or spot twice still pans.
+ */
+export type MapFocusRequest =
+  { id: string; point?: never; nonce: number } | { point: MapPoint; id?: never; nonce: number }
+
+const POINT_ZOOM = 10
+const PULSE_MS = 2600
 
 interface TripMapProps {
   /** Places currently in the form. Shown as pins until a plan covers them. */
@@ -23,7 +34,7 @@ interface TripMapProps {
   pickBusy: boolean
   onPick: (lat: number, lon: number) => void
   onCancelPick: () => void
-  focus: StopFocusRequest | null
+  focus: MapFocusRequest | null
   planningMessage: string | null
   className?: string
 }
@@ -91,7 +102,7 @@ function StopFocus({
   plan,
   markers,
 }: {
-  focus: StopFocusRequest | null
+  focus: MapFocusRequest | null
   plan: PlanResponse | null
   markers: RefObject<Map<string, LeafletMarker>>
 }) {
@@ -99,6 +110,16 @@ function StopFocus({
 
   useEffect(() => {
     if (!focus || !plan) return
+
+    if (focus.point) {
+      // A spot on the road has no popup. Move there and let the pulse ring say where it is.
+      map.closePopup()
+      map.setView([focus.point.lat, focus.point.lon], Math.max(map.getZoom(), POINT_ZOOM), {
+        animate: !prefersReducedMotion(),
+      })
+      return
+    }
+
     const stop = plan.stops.find((s) => s.id === focus.id)
     if (!stop) return
     // The end of the trip shares the dropoff's spot, so it borrows that marker.
@@ -268,6 +289,9 @@ export function TripMap({
           />
         ))}
         <StopFocus focus={focus} plan={plan} markers={markers} />
+        {plan && focus?.point && (
+          <PointPulse key={focus.nonce} point={focus.point} lifetimeMs={PULSE_MS} />
+        )}
       </MapContainer>
 
       {plan && !planningMessage && <MapLegend />}

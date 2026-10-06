@@ -72,7 +72,9 @@ LOG = {
     "header",
     "vehicle",
 }
-RESPONSE = {"request", "summary", "route", "stops", "segments", "logs", "assumptions", "warnings"}
+DIRECTION_LEG = {"from", "to", "title", "distance_miles", "steps"}
+DIRECTION_STEP = {"kind", "instruction", "road", "heading", "distance_miles", "mile", "lat", "lon"}
+RESPONSE = {"request", "summary", "route", "stops", "segments", "logs", "directions", "assumptions", "warnings"}
 
 
 def has_keys(obj: Any, keys: set[str], where: str) -> None:
@@ -111,6 +113,11 @@ def assert_plan_response(obj: Any) -> None:
             has_keys(entry, ENTRY, f"logs[{i}].entries")
         for remark in log["remarks"]:
             has_keys(remark, REMARK, f"logs[{i}].remarks")
+    assert obj["directions"] == [] or len(obj["directions"]) == 2
+    for i, leg in enumerate(obj["directions"]):
+        has_keys(leg, DIRECTION_LEG, f"directions[{i}]")
+        for j, step in enumerate(leg["steps"]):
+            has_keys(step, DIRECTION_STEP, f"directions[{i}].steps[{j}]")
     assert all(isinstance(a, str) for a in obj["assumptions"])
     assert all(isinstance(w, str) for w in obj["warnings"])
 

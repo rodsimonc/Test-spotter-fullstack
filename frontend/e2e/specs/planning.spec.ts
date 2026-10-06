@@ -41,6 +41,7 @@ test.describe('planning the example trip', () => {
 
   test('opens on the itinerary tab', async ({ page }) => {
     await expect(page.getByTestId('panel-itinerary')).toBeVisible()
+    await expect(page.getByTestId('panel-directions')).toBeHidden()
     await expect(page.getByTestId('panel-logs')).toBeHidden()
     await expect(page.getByTestId('panel-summary')).toBeHidden()
     await expect(page.getByTestId('empty-state')).toBeHidden()
@@ -168,6 +169,8 @@ test.describe('while planning', () => {
     // Tabs use a roving tabindex: Tab lands on the selected tab, arrow keys move between them.
     await tabTo(page, 'tab-itinerary')
     await page.keyboard.press('ArrowRight')
+    await expect(page.getByTestId('panel-directions')).toBeVisible()
+    await page.keyboard.press('ArrowRight')
     await expect(page.getByTestId('panel-logs')).toBeVisible()
     await page.keyboard.press('ArrowRight')
     await expect(page.getByTestId('panel-summary')).toBeVisible()
@@ -275,7 +278,7 @@ test.describe('when planning fails', () => {
 
 test.describe('route cache', () => {
   test(
-    'asks the router once for a trip that is planned twice',
+    'asks the router once, and once more for the steps, for a trip that is planned twice',
     { tag: '@fake' },
     async ({ page, request }) => {
       // Coordinates no other test uses, so the call log holds this test's requests only.
@@ -286,15 +289,21 @@ test.describe('route cache', () => {
         lon: Number((EXAMPLE_PLACES.current.lon - 0.4 + unique()).toFixed(4)),
       }
       const needle = `${current.lon.toFixed(6)},${current.lat.toFixed(6)}`
+      // A fresh plan makes two router calls: the route, then the best-effort one for the steps.
       const routerCalls = async () => {
         const url = `${upstreamURL}/__calls?service=osrm&contains=${encodeURIComponent(needle)}`
-        return ((await (await request.get(url)).json()) as { calls: unknown[] }).calls.length
+        const { calls } = (await (await request.get(url)).json()) as { calls: { url: string }[] }
+        const steps = calls.filter((call) => call.url.includes('steps=true')).length
+        return { route: calls.length - steps, steps }
       }
 
       await openTripAndPlan(page, exampleRequest({ current }))
-      expect(await routerCalls()).toBe(1)
+      expect(await routerCalls()).toEqual({ route: 1, steps: 1 })
       await clickPlan(page)
-      expect(await routerCalls(), 'the second plan should come from the cache').toBe(1)
+      expect(await routerCalls(), 'the second plan should come from the cache').toEqual({
+        route: 1,
+        steps: 1,
+      })
     },
   )
 })

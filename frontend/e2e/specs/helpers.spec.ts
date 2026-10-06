@@ -1,5 +1,6 @@
 import { jsPDF } from 'jspdf'
 import type { PlanResponse, Segment } from '../../src/api/types'
+import { midRoadIndex, mileShown, showsNumber } from '../helpers/directions'
 import { checkPlan } from '../helpers/hos-check'
 import { countPdfPages, startsLikePdf } from '../helpers/pdf'
 import { firstNumber, numbersIn, parseMinutes } from '../helpers/parse'
@@ -24,6 +25,29 @@ test.describe('parsing what the UI prints', () => {
     expect(parseMinutes('45 minutes')).toBe(45)
     expect(parseMinutes('1,557 mi')).toBeNull()
     expect(parseMinutes('6:00 AM')).toBeNull()
+  })
+})
+
+test.describe('reading a Directions line', () => {
+  test('finds the mile note, with or without a thousands separator', () => {
+    expect(mileShown('Take I-40 W 212 mi mile 340')).toBe(340)
+    expect(mileShown('Continue on Frontage Road 7.1 mi Mile 1,053.4')).toBe(1053.4)
+    expect(mileShown('Take I-40 W 212 mi')).toBeNull()
+    expect(mileShown('The mileage is 5')).toBeNull()
+  })
+
+  test('finds a distance within half a mile of the value', () => {
+    expect(showsNumber('Take I-40 W 212 mi mile 340', 212.3)).toBe(true)
+    expect(showsNumber('1,053 mi', 1052.7)).toBe(true)
+    expect(showsNumber('212 mi', 214)).toBe(false)
+    expect(showsNumber('no numbers here', 4)).toBe(false)
+  })
+
+  test('picks a road line after the first two lines to click', () => {
+    const line = (kind: 'depart' | 'road' | 'arrive') =>
+      ({ kind }) as Parameters<typeof midRoadIndex>[0][number]
+    expect(midRoadIndex([line('depart'), line('road'), line('road'), line('arrive')])).toBe(2)
+    expect(midRoadIndex([line('depart'), line('arrive')])).toBe(-1)
   })
 })
 

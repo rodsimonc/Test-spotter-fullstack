@@ -1017,6 +1017,154 @@
       "vehicle": "Truck T-2041 / Trailer TR-8812"
     }
   ],
+  "directions": [
+    {
+      "from": "current",
+      "to": "pickup",
+      "title": "Nashville, TN to Kansas City, MO",
+      "distance_miles": 566.4,
+      "steps": [
+        {
+          "kind": "depart",
+          "instruction": "Head west on Broadway",
+          "road": "Broadway",
+          "heading": "W",
+          "distance_miles": 1.8,
+          "mile": 0,
+          "lat": 36.1627,
+          "lon": -86.7816
+        },
+        {
+          "kind": "road",
+          "instruction": "Take I-24 W",
+          "road": "I-24",
+          "heading": "W",
+          "distance_miles": 150.2,
+          "mile": 1.8,
+          "lat": 36.17823,
+          "lon": -86.80409
+        },
+        {
+          "kind": "road",
+          "instruction": "Take I-57 N",
+          "road": "I-57",
+          "heading": "N",
+          "distance_miles": 42.6,
+          "mile": 152,
+          "lat": 37.13711,
+          "lon": -88.78454
+        },
+        {
+          "kind": "road",
+          "instruction": "Take I-64 W",
+          "road": "I-64",
+          "heading": "W",
+          "distance_miles": 78.1,
+          "mile": 194.6,
+          "lat": 37.29565,
+          "lon": -89.46516
+        },
+        {
+          "kind": "road",
+          "instruction": "Take I-70 W",
+          "road": "I-70",
+          "heading": "W",
+          "distance_miles": 289.4,
+          "mile": 272.7,
+          "lat": 38.19884,
+          "lon": -90.03209
+        },
+        {
+          "kind": "road",
+          "instruction": "Continue on Grand Blvd",
+          "road": "Grand Blvd",
+          "heading": "W",
+          "distance_miles": 4.3,
+          "mile": 562.1,
+          "lat": 39.09829,
+          "lon": -94.50513
+        },
+        {
+          "kind": "arrive",
+          "instruction": "Arrive at Kansas City",
+          "road": "",
+          "heading": "",
+          "distance_miles": 0,
+          "mile": 566.4,
+          "lat": 39.0997,
+          "lon": -94.5786
+        }
+      ]
+    },
+    {
+      "from": "pickup",
+      "to": "dropoff",
+      "title": "Kansas City, MO to Denver, CO",
+      "distance_miles": 606.8,
+      "steps": [
+        {
+          "kind": "depart",
+          "instruction": "Head south on Grand Blvd",
+          "road": "Grand Blvd",
+          "heading": "S",
+          "distance_miles": 1.5,
+          "mile": 566.4,
+          "lat": 39.0997,
+          "lon": -94.5786
+        },
+        {
+          "kind": "road",
+          "instruction": "Take I-670 W",
+          "road": "I-670",
+          "heading": "W",
+          "distance_miles": 2.3,
+          "mile": 567.9,
+          "lat": 39.09566,
+          "lon": -94.60521
+        },
+        {
+          "kind": "road",
+          "instruction": "Take I-70 W",
+          "road": "I-70",
+          "heading": "W",
+          "distance_miles": 596.3,
+          "mile": 570.2,
+          "lat": 39.08947,
+          "lon": -94.64601
+        },
+        {
+          "kind": "road",
+          "instruction": "Take I-25 S",
+          "road": "I-25",
+          "heading": "S",
+          "distance_miles": 4.2,
+          "mile": 1166.5,
+          "lat": 39.74359,
+          "lon": -104.86818
+        },
+        {
+          "kind": "road",
+          "instruction": "Continue on Speer Blvd",
+          "road": "Speer Blvd",
+          "heading": "W",
+          "distance_miles": 2.5,
+          "mile": 1170.7,
+          "lat": 39.74084,
+          "lon": -104.94473
+        },
+        {
+          "kind": "arrive",
+          "instruction": "Arrive at Denver",
+          "road": "",
+          "heading": "",
+          "distance_miles": 0,
+          "mile": 1173.2,
+          "lat": 39.7392,
+          "lon": -104.9903
+        }
+      ]
+    }
+  ],
   "assumptions": [
     "Property-carrying driver on the 70-hour/8-day schedule, with no adverse driving conditions.",
     "The driver starts rested (10 or more hours off) with a full tank. The 14-hour window starts at departure.",

@@ -3,7 +3,15 @@
 import assert from 'node:assert/strict'
 import { after, before, describe, test } from 'node:test'
 import { haversineMeters } from './geo.mjs'
-import { MAGIC, NOMINATIM_EMPTY_POINT, NOMINATIM_FAIL_POINT, ROAD_FACTOR } from './magic.mjs'
+import {
+  HOSTILE_ROAD_NAME,
+  HOSTILE_ROAD_POINT,
+  MAGIC,
+  NOMINATIM_EMPTY_POINT,
+  NOMINATIM_FAIL_POINT,
+  ROAD_FACTOR,
+  STEPS_FAIL_POINT,
+} from './magic.mjs'
 import { createFakeUpstream } from './server.mjs'
 
 const SLOW_MS = 120
@@ -156,6 +164,157 @@ describe('OSRM', () => {
     const plain = await getJson(routeUrl(DALLAS, MEMPHIS))
     const prefixed = await getJson(routeUrl(DALLAS, MEMPHIS).replace(base, `${base}/osrm`))
     assert.deepEqual(prefixed.body, plain.body)
+  })
+})
+
+describe('OSRM steps', () => {
+  const stepsUrl = (...points) =>
+    `${base}/route/v1/driving/${points.map(lonLat).join(';')}?overview=false&steps=true&geometries=polyline&annotations=false`
+  const legsOf = async (...points) => (await getJson(stepsUrl(...points))).body.routes[0].legs
+  const sum = (steps, key) => steps.reduce((total, step) => total + step[key], 0)
+
+  test('cuts each leg into 6 to 12 pieces and a final arrive step', async () => {
+    const { res, body } = await getJson(stepsUrl(DALLAS, MEMPHIS, DENVER))
+    assert.equal(res.status, 200)
+    assert.equal(body.code, 'Ok')
+    const [route] = body.routes
+    assert.equal(route.geometry, undefined, 'overview=false keeps the geometry out')
+    assert.equal(route.legs.length, 2)
+    for (const leg of route.legs) {
+      const pieces = leg.steps.slice(0, -1)
+      assert.ok(pieces.length >= 6 && pieces.length <= 12, `pieces: ${pieces.length}`)
+      assert.equal(leg.steps[0].maneuver.type, 'depart')
+      assert.ok(pieces.slice(1).every((step) => step.maneuver.type !== 'depart'))
+      const arrive = leg.steps.at(-1)
+      assert.equal(arrive.maneuver.type, 'arrive')
+      assert.equal(arrive.distance, 0)
+      assert.equal(arrive.duration, 0)
+    }
+  })
+
+  test('the pieces add up to the leg distance and duration', async () => {
+    for (const leg of await legsOf(DALLAS, MEMPHIS, DENVER)) {
+      assert.ok(Math.abs(sum(leg.steps, 'distance') - leg.distance) < 0.5)
+      assert.ok(Math.abs(sum(leg.steps, 'duration') - leg.duration) < 0.5)
+      assert.ok(leg.steps.slice(0, -1).every((step) => step.distance > 0 && step.duration > 0))
+    }
+  })
+
+  test('steps carry the fields the backend reads, in OSRM units and order', async () => {
+    for (const leg of await legsOf(DALLAS, MEMPHIS)) {
+      for (const step of leg.steps) {
+        assert.equal(typeof step.name, 'string')
+        assert.ok(step.ref === undefined || (typeof step.ref === 'string' && step.ref !== ''))
+        const { location, bearing_after: bearing, type } = step.maneuver
+        assert.equal(typeof type, 'string')
+        assert.equal(location.length, 2)
+        assert.ok(location[0] < -80 && location[0] > -125, 'longitude comes first')
+        assert.ok(location[1] > 25 && location[1] < 50, 'latitude comes second')
+        assert.ok(Number.isInteger(bearing) && bearing >= 0 && bearing < 360)
+      }
+    }
+  })
+
+  test('starts and ends each leg on the waypoints, and the legs join at the middle one', async () => {
+    const [first, second] = await legsOf(DALLAS, MEMPHIS, DENVER)
+    assert.deepEqual(first.steps[0].maneuver.location, [DALLAS.lon, DALLAS.lat])
+    assert.deepEqual(first.steps.at(-1).maneuver.location, [MEMPHIS.lon, MEMPHIS.lat])
+    assert.deepEqual(second.steps[0].maneuver.location, [MEMPHIS.lon, MEMPHIS.lat])
+    assert.deepEqual(second.steps.at(-1).maneuver.location, [DENVER.lon, DENVER.lat])
+  })
+
+  test('every step starts on a point of the route geometry, in order', async () => {
+    const url = stepsUrl(DALLAS, MEMPHIS, DENVER)
+      .replace('overview=false', 'overview=full')
+      .replace('geometries=polyline', 'geometries=geojson')
+    const { body } = await getJson(url)
+    const [route] = body.routes
+    const index = new Map(route.geometry.coordinates.map(([lon, lat], i) => [`${lon},${lat}`, i]))
+    let previous = -1
+    for (const step of route.legs.flatMap((leg) => leg.steps)) {
+      const at = index.get(step.maneuver.location.join(','))
+      assert.notEqual(at, undefined, `not on the route: ${step.maneuver.location}`)
+      assert.ok(at >= previous, 'steps follow the route in order')
+      previous = at
+    }
+  })
+
+  test('heads toward the next piece: east to Memphis, west to Denver', async () => {
+    const [toMemphis, toDenver] = await legsOf(DALLAS, MEMPHIS, DENVER)
+    const east = toMemphis.steps[0].maneuver.bearing_after
+    const west = toDenver.steps[0].maneuver.bearing_after
+    assert.ok(east > 45 && east < 135, `east: ${east}`)
+    assert.ok(west > 225 && west < 315, `west: ${west}`)
+  })
+
+  test('puts a street at each end and highways between, never one road twice in a row', async () => {
+    for (const leg of await legsOf(DALLAS, MEMPHIS, DENVER)) {
+      const road = (step) => (step.ref ?? step.name).split(';')[0]
+      assert.equal(leg.steps[0].ref, undefined)
+      assert.equal(leg.steps.at(-2).ref, undefined)
+      const highways = leg.steps.slice(1, -2)
+      assert.ok(highways.length >= 4)
+      assert.ok(highways.some((step) => /^(I|US|TX) \d+/.test(step.ref ?? '')))
+      for (let i = 1; i < leg.steps.length - 1; i++) {
+        assert.notEqual(road(leg.steps[i]), road(leg.steps[i - 1]), `repeat at step ${i}`)
+      }
+    }
+  })
+
+  test('uses a mix of roads, among them an interstate and a US route', async () => {
+    const refs = (await legsOf(DALLAS, MEMPHIS, DENVER)).flatMap((leg) =>
+      leg.steps.map((s) => s.ref),
+    )
+    assert.ok(refs.some((ref) => ref?.startsWith('I ')))
+    assert.ok(refs.some((ref) => ref?.startsWith('US ')))
+  })
+
+  test('gives the same answer every time, and the same under the /osrm prefix', async () => {
+    const plain = await getJson(stepsUrl(DALLAS, MEMPHIS, DENVER))
+    const again = await getJson(stepsUrl(DALLAS, MEMPHIS, DENVER))
+    const prefixed = await getJson(stepsUrl(DALLAS, MEMPHIS, DENVER).replace(base, `${base}/osrm`))
+    assert.deepEqual(again.body, plain.body)
+    assert.deepEqual(prefixed.body, plain.body)
+  })
+
+  test('leaves the steps empty when the request does not ask for them', async () => {
+    for (const leg of (await getJson(routeUrl(DALLAS, MEMPHIS, DENVER))).body.routes[0].legs) {
+      assert.deepEqual(leg.steps, [])
+    }
+  })
+
+  test('copes with a leg shorter than a mile', async () => {
+    const near = { lat: DALLAS.lat + 0.004, lon: DALLAS.lon }
+    const [leg] = await legsOf(DALLAS, near)
+    assert.ok(leg.distance < 1609)
+    assert.equal(leg.steps[0].maneuver.type, 'depart')
+    assert.equal(leg.steps.at(-1).maneuver.type, 'arrive')
+    assert.ok(Math.abs(sum(leg.steps, 'distance') - leg.distance) < 0.5)
+  })
+
+  test('answers 400 TooBig to the steps request at the failure point, and only that one', async () => {
+    const { res, body } = await getJson(stepsUrl(DALLAS, STEPS_FAIL_POINT, DENVER))
+    assert.equal(res.status, 400)
+    assert.equal(body.code, 'TooBig')
+    assert.equal(body.routes, undefined)
+
+    const plain = await getJson(routeUrl(DALLAS, STEPS_FAIL_POINT, DENVER))
+    assert.equal(plain.res.status, 200)
+    assert.equal(plain.body.code, 'Ok')
+    assert.equal(plain.body.routes[0].legs.length, 2)
+  })
+
+  test('names the street at the hostile point with HTML, unescaped', async () => {
+    const [toHostile, fromHostile] = await legsOf(DALLAS, HOSTILE_ROAD_POINT, DENVER)
+    assert.equal(toHostile.steps.at(-2).name, HOSTILE_ROAD_NAME)
+    assert.equal(toHostile.steps.at(-1).name, HOSTILE_ROAD_NAME)
+    assert.equal(fromHostile.steps[0].name, HOSTILE_ROAD_NAME)
+    assert.match(HOSTILE_ROAD_NAME, /^<img src=x onerror=/)
+    const others = [...toHostile.steps.slice(0, -2), ...fromHostile.steps.slice(1, -2)]
+    assert.ok(
+      others.every((step) => !step.name.includes('<')),
+      'only the street beside the point',
+    )
   })
 })
 

@@ -4,6 +4,8 @@
 import {
   EMPTY_HEADER,
   type DailyLog,
+  type DirectionLeg,
+  type DirectionStep,
   type DutyStatus,
   type LogEntry,
   type PlanRequest,
@@ -289,6 +291,84 @@ function buildLogs(segments: Segment[], elapsed: number): DailyLog[] {
   }
   return logs
 }
+
+const HEADING_WORD: Record<string, string> = {
+  N: 'north',
+  NE: 'northeast',
+  E: 'east',
+  SE: 'southeast',
+  S: 'south',
+  SW: 'southwest',
+  W: 'west',
+  NW: 'northwest',
+}
+
+const STATE_OF = ['TX', 'TN', 'CO']
+
+/** Stretches of road per leg: name or reference, compass heading, miles. Each leg adds up to its distance. */
+const DIRECTION_LEGS: [string, string, number][][] = [
+  [
+    ['Commerce St', 'E', 1.4],
+    ['I-30', 'E', 317.6],
+    ['I-40', 'E', 127.2],
+    ['Union Ave', 'E', 5.8],
+  ],
+  [
+    ['Main St', 'N', 2.1],
+    ['I-40', 'W', 681.5],
+    ['US-287', 'N', 346.2],
+    ['Colfax Ave', 'W', 10.2],
+  ],
+]
+
+function buildDirections(): DirectionLeg[] {
+  const round = (n: number) => Math.round(n * 10) / 10
+  const places = [DALLAS, MEMPHIS, DENVER]
+  let base = 0
+  return DIRECTION_LEGS.map((legSpec, li) => {
+    const distance = legSpec.reduce((sum, [, , miles]) => sum + miles, 0)
+    let offset = 0
+    const steps: DirectionStep[] = legSpec.map(([road, heading, miles], si) => {
+      const mile = round(base + offset)
+      offset += miles
+      const isRef = /^[A-Z]+-\d+[A-Z]?$/.test(road)
+      return {
+        kind: si === 0 ? 'depart' : 'road',
+        instruction:
+          si === 0
+            ? `Head ${HEADING_WORD[heading]} on ${road}`
+            : isRef
+              ? `Take ${road} ${heading}`
+              : `Continue on ${road}`,
+        road,
+        heading,
+        distance_miles: miles,
+        mile,
+        ...positionAt(mile),
+      }
+    })
+    const end = places[li + 1]
+    steps.push({
+      kind: 'arrive',
+      instruction: `Arrive at ${end.label.split(',')[0]}`,
+      road: '',
+      heading: '',
+      distance_miles: 0,
+      mile: round(base + distance),
+      lat: end.lat,
+      lon: end.lon,
+    })
+    base += distance
+    return {
+      from: li === 0 ? 'current' : 'pickup',
+      to: li === 0 ? 'pickup' : 'dropoff',
+      title: `${places[li].label.split(',')[0]}, ${STATE_OF[li]} to ${end.label.split(',')[0]}, ${STATE_OF[li + 1]}`,
+      distance_miles: round(distance),
+      steps,
+    }
+  })
+}
+
 function buildGeometry(): [number, number][] {
   const points: [number, number][] = []
   for (let mile = 0; mile <= TOTAL_MILES; mile += 20) {
@@ -366,6 +446,7 @@ export function makePlan(overrides: Partial<PlanResponse> = {}): PlanResponse {
     stops,
     segments,
     logs,
+    directions: buildDirections(),
     assumptions: [
       'Property-carrying driver on the 70-hour/8-day schedule, no adverse driving conditions.',
       'Overnight rest is logged in the sleeper berth for 10 hours.',

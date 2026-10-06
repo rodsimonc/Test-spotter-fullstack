@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { act, fireEvent, render, screen, within } from '@testing-library/react'
+import { Map as LeafletMap } from 'leaflet'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { Place, PlanResponse } from '@/api/types'
 import { makePlan } from '@/test/makePlan'
@@ -260,6 +261,91 @@ describe('TripMap', () => {
       const { update } = renderPlanned()
       act(() => update({ focus: { id: 'nope', nonce: 1 } }))
       expect(document.querySelector('.leaflet-popup')).toBeNull()
+    })
+  })
+
+  describe('focusing a point from the directions', () => {
+    const POINT = { lat: 35.2, lon: -92.4 }
+
+    it('marks the spot with a pulse ring and opens no popup', () => {
+      const { update } = renderPlanned()
+      expect(screen.queryByTestId('point-pulse')).not.toBeInTheDocument()
+      act(() => update({ focus: { point: POINT, nonce: 1 } }))
+      expect(screen.getByTestId('point-pulse')).toBeInTheDocument()
+      expect(document.querySelector('.leaflet-popup')).toBeNull()
+    })
+
+    it('pans there and zooms to at least 10', () => {
+      const setView = vi.spyOn(LeafletMap.prototype, 'setView')
+      const { update } = renderPlanned()
+      setView.mockClear()
+      act(() => update({ focus: { point: POINT, nonce: 1 } }))
+      expect(setView).toHaveBeenCalledTimes(1)
+      const [center, zoom] = setView.mock.calls[0] as unknown as [[number, number], number]
+      expect(center).toEqual([POINT.lat, POINT.lon])
+      expect(zoom).toBeGreaterThanOrEqual(10)
+      setView.mockRestore()
+    })
+
+    it('keeps the zoom when the map is already closer', () => {
+      const setView = vi.spyOn(LeafletMap.prototype, 'setView')
+      const { update } = renderPlanned()
+      act(() => update({ focus: { point: POINT, nonce: 1 } }))
+      act(() => update({ focus: { point: { lat: 35.3, lon: -92.5 }, nonce: 2 } }))
+      const zooms = setView.mock.calls.map((call) => call[1] as number)
+      expect(zooms.at(-1)).toBeGreaterThanOrEqual(zooms.at(-2) ?? 0)
+      setView.mockRestore()
+    })
+
+    it('takes the ring away after a moment', () => {
+      vi.useFakeTimers()
+      try {
+        const { update } = renderPlanned()
+        act(() => update({ focus: { point: POINT, nonce: 1 } }))
+        expect(screen.getByTestId('point-pulse')).toBeInTheDocument()
+        act(() => {
+          vi.advanceTimersByTime(3000)
+        })
+        expect(screen.queryByTestId('point-pulse')).not.toBeInTheDocument()
+      } finally {
+        vi.useRealTimers()
+      }
+    })
+
+    it('starts a fresh ring when the same spot is chosen twice', () => {
+      const { update } = renderPlanned()
+      act(() => update({ focus: { point: POINT, nonce: 1 } }))
+      const first = screen.getByTestId('point-pulse')
+      act(() => update({ focus: { point: POINT, nonce: 2 } }))
+      expect(screen.getAllByTestId('point-pulse')).toHaveLength(1)
+      expect(screen.getByTestId('point-pulse')).not.toBe(first)
+    })
+
+    it('builds the ring from fixed markup with no text', () => {
+      const { update } = renderPlanned()
+      act(() => update({ focus: { point: POINT, nonce: 1 } }))
+      const ring = screen.getByTestId('point-pulse')
+      expect(ring.textContent).toBe('')
+      expect(ring.querySelectorAll('span')).toHaveLength(3)
+      expect(ring).not.toHaveAttribute('tabindex')
+      expect(ring.className).not.toContain('leaflet-interactive')
+    })
+
+    it('leaves stop focus working, and drops the ring when a stop is chosen', async () => {
+      const { update } = renderPlanned()
+      act(() => update({ focus: { point: POINT, nonce: 1 } }))
+      act(() => update({ focus: { id: 'stop-4', nonce: 2 } }))
+      expect(screen.queryByTestId('point-pulse')).not.toBeInTheDocument()
+      // The earlier pan may still be animating, so the popup opens once the map settles.
+      await waitFor(() =>
+        expect(document.querySelector('.leaflet-popup')).toHaveTextContent('10-hour rest'),
+      )
+    })
+
+    it('does nothing without a plan', () => {
+      const { update } = renderMap()
+      act(() => update({ focus: { point: POINT, nonce: 1 } }))
+      expect(screen.queryByTestId('point-pulse')).not.toBeInTheDocument()
     })
   })
 

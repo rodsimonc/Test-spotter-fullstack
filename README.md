@@ -24,7 +24,8 @@ Press **Try an example** to plan Dallas to Memphis to Denver with 24 hours alrea
 - Inserts fuel stops (30 minutes on duty, at least every 1,000 miles), 30-minute breaks, 10-hour sleeper rests, and a 34-hour restart when the cycle runs out.
 - Shows the route on an OpenStreetMap map with numbered stops, a legend and a popup per stop.
 - Lists the trip day by day: arrival and departure times, durations and mile markers.
-- Draws a daily log sheet for every day, rebuilt as SVG to match the paper form: status line, remarks, totals and the 70-hour recap.
+- Gives road-by-road directions for both legs, merged by road so a 1,500-mile trip reads as about 40 lines ("Take I-40 W, 212 mi"). A line pans the map to that spot.
+- Draws a daily log sheet for every day, rebuilt as SVG to match the paper form: status line, remarks, totals, the 70-hour recap and the driver's certification line.
 - Downloads all the sheets as one PDF, or prints them one per page.
 - Shares a trip as a link. Opening it plans the trip again, with no account needed.
 - Lets you save trips, rename them and open them later, once you've made an account.

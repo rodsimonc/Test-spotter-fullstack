@@ -278,9 +278,26 @@ describe('results actions', () => {
     expect(screen.getByTestId('map')).toHaveAttribute('data-focus', 'stop-6')
   })
 
-  it('switches between the three tabs', async () => {
+  it('clicking a direction line sends its spot to the map', async () => {
     const { user } = setup()
     await planExample(user)
+    expect(screen.getByTestId('map')).toHaveAttribute('data-focus-point', '')
+    await user.click(screen.getByTestId('tab-directions'))
+    const step = makePlan().directions[0].steps[1]
+    await user.click(screen.getByTestId('direction-step-0-1'))
+    expect(screen.getByTestId('map')).toHaveAttribute('data-focus-point', `${step.lat},${step.lon}`)
+    expect(screen.getByTestId('map')).toHaveAttribute('data-focus', '')
+    await user.click(screen.getByTestId('tab-itinerary'))
+    await user.click(screen.getByTestId('stop-card-stop-2'))
+    expect(screen.getByTestId('map')).toHaveAttribute('data-focus', 'stop-2')
+    expect(screen.getByTestId('map')).toHaveAttribute('data-focus-point', '')
+  })
+
+  it('switches between the four tabs', async () => {
+    const { user } = setup()
+    await planExample(user)
+    await user.click(screen.getByTestId('tab-directions'))
+    expect(screen.getByTestId('direction-leg-0')).toBeInTheDocument()
     await user.click(screen.getByTestId('tab-logs'))
     expect(screen.getByTestId('log-viewer')).toBeInTheDocument()
     await user.click(screen.getByTestId('tab-summary'))

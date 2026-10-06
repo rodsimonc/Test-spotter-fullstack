@@ -12,6 +12,9 @@ export function TripMap(props: ComponentProps<typeof RealTripMap>) {
       data-pick={props.pickTarget ?? ''}
       data-pick-busy={String(props.pickBusy)}
       data-focus={props.focus?.id ?? ''}
+      data-focus-point={
+        props.focus?.point ? `${props.focus.point.lat},${props.focus.point.lon}` : ''
+      }
       data-stops={props.plan?.stops.length ?? 0}
       data-planning={props.planningMessage ?? ''}
       data-places={Object.values(props.places)

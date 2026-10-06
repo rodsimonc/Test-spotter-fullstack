@@ -3,6 +3,19 @@
 Every notable change to this project is recorded here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] - 2026-10-06
+
+### Added
+
+- **Directions tab** with condensed road-by-road directions for both legs. The planner asks OSRM for the steps in a second, best-effort request, merges consecutive steps on the same road, folds in tiny connector steps, and caps each leg at 120 lines. If the steps request fails, the plan still succeeds and the tab says directions aren't available. Each line pans the map to that spot.
+- **`directions` in the plan response** (see `docs/api-contract.md` and `openapi.yaml`). Trips saved before this release read back with an empty list.
+- **Driver's certification line** on every log sheet: "I certify that these entries are true and correct" with a blank signature line, as on the FMCSA sample (guide page 15). The line is left blank on purpose.
+
+### Changed
+
+- Result tabs are now Itinerary, Directions, Daily logs, Summary. Below 640 px they show labels only so all four fit.
+- Form fields use 16 px text on phones, so iOS doesn't zoom the page on focus.
+
 ## [0.1.0] - 2026-10-06
 
 First release. Built for the Spotter full-stack assessment.

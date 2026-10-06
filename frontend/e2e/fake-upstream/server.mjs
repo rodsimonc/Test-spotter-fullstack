@@ -1,11 +1,15 @@
 // Stand-in for OSRM, Photon and Nominatim, so end-to-end runs never touch the public servers.
 //
-//   OSRM       GET /route/v1/driving/{lon},{lat};{lon},{lat};...
+//   OSRM       GET /route/v1/driving/{lon},{lat};{lon},{lat};...   (add steps=true for turn-by-turn)
 //   Photon     GET /api/?q=...&limit=5&lang=en
 //   Nominatim  GET /reverse?format=jsonv2&lat=..&lon=..
 //
 // Each service also answers under a prefix (/osrm, /photon, /nominatim), so Django can point
 // its three base URLs at one host and still tell them apart in logs.
+//
+// The steps request (`steps=true`) answers each leg with 6 to 12 steps along synthetic roads, see
+// steps.mjs. magic.mjs has a point that makes only that request fail, and one that puts HTML in a
+// street name.
 //
 // Helpers: GET /health, GET /__calls (what the services were asked), POST /__reset.
 // Run it with `node e2e/fake-upstream/server.mjs`. The port comes from FAKE_UPSTREAM_PORT
@@ -22,9 +26,11 @@ import {
   NOMINATIM_FAIL_POINT,
   PHOTON_FAIL_QUERY,
   ROAD_FACTOR,
+  STEPS_FAIL_POINT,
   isNear,
   magicAt,
 } from './magic.mjs'
+import { legSteps } from './steps.mjs'
 
 const METERS_PER_MILE = 1609.344
 const SERVICE_PREFIXES = ['osrm', 'photon', 'nominatim']
@@ -72,19 +78,31 @@ function snapDistance([lat, lon]) {
 }
 
 function buildRoute(waypoints, query) {
+  const wantSteps = query.get('steps') === 'true'
   const legs = []
   /** @type {[number, number][]} */
   const geometry = []
   for (let i = 0; i < waypoints.length - 1; i++) {
     const [from, to] = [waypoints[i], waypoints[i + 1]]
     const meters = haversineMeters(from, to) * ROAD_FACTOR
-    legs.push({
+    const entry = {
       distance: Math.round(meters * 10) / 10,
       duration: Math.round((meters / speedMetersPerSecond(meters)) * 10) / 10,
       summary: '',
       steps: [],
-    })
+    }
     const leg = legGeometry(from, to)
+    if (wantSteps) {
+      entry.steps = legSteps({
+        from,
+        to,
+        meters: entry.distance,
+        seconds: entry.duration,
+        geometry: leg,
+        legIndex: i,
+      })
+    }
+    legs.push(entry)
     geometry.push(...(i === 0 ? leg : leg.slice(1)))
   }
   const route = {
@@ -137,6 +155,13 @@ async function handleRoute(pathname, query, res, options) {
       waypoints: [],
       routes: [],
     })
+  }
+  // Only the steps request fails here. The plain route request for the same points is fine.
+  if (
+    query.get('steps') === 'true' &&
+    waypoints.some(([lat, lon]) => isNear(lat, lon, STEPS_FAIL_POINT))
+  ) {
+    return sendJson(res, 400, { code: 'TooBig', message: 'Request too big for this server.' })
   }
   if (effects.includes('osrm-slow')) await sleep(options.slowMs)
 

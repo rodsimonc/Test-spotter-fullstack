@@ -10,7 +10,7 @@ import responses
 from apps.planner import services
 from apps.planner.types import PlanRequestData, RouteData
 from tests.support.contract import assert_error, assert_plan_response
-from tests.support.osrm import OSRM_ROUTE, osrm_payload, register_osrm
+from tests.support.osrm import OSRM_ROUTE, osrm_payload, register_osrm, route_calls
 
 URL = "/api/plan"
 
@@ -36,13 +36,13 @@ def test_plan_works_without_an_account(api, plan_payload, osrm):
     assert api.post(URL, plan_payload, format="json").status_code == 200
 
 
-def test_plan_sends_one_osrm_request_with_three_waypoints(api, plan_payload, rsps):
+def test_plan_sends_one_osrm_route_request_with_three_waypoints(api, plan_payload, rsps):
     register_osrm(rsps)
 
     api.post(URL, plan_payload, format="json")
 
-    assert len(rsps.calls) == 1
-    url = rsps.calls[0].request.url
+    assert len(route_calls(rsps)) == 1
+    url = route_calls(rsps)[0].request.url
     assert "/route/v1/driving/-96.797000,32.776700;-90.049000,35.149500;-104.990300,39.739200" in url
     assert "overview=full" in url and "geometries=geojson" in url and "steps=false" in url
 
@@ -295,7 +295,7 @@ def test_osrm_that_recovers_on_retry_succeeds(api, plan_payload, rsps):
     rsps.add(responses.GET, OSRM_ROUTE, body="down", status=503)
     register_osrm(rsps)
     assert api.post(URL, plan_payload, format="json").status_code == 200
-    assert len(rsps.calls) == 2
+    assert len(route_calls(rsps)) == 2
 
 
 def test_osrm_garbage_is_502(api, plan_payload, rsps):

@@ -24,9 +24,15 @@ logger = logging.getLogger(__name__)
 
 CONNECT_TIMEOUT_SECONDS = 3.0
 READ_TIMEOUT_SECONDS = 8.0
+#: The turn list is a nice-to-have, so it gets less time than the route itself.
+STEPS_READ_TIMEOUT_SECONDS = 6.0
 RETRY_DELAY_SECONDS = 0.25
 
 OSRM_MAX_BYTES = 5 * 1024 * 1024
+#: Measured against the public router: Los Angeles to Phoenix to New York (2,783 miles) came back as
+#: 479 KB of JSON (145 KB gzipped) in 1.6 seconds, about 172 bytes a mile. The planner's 10,000 mile
+#: limit needs about 1.7 MB, so 4 MiB leaves more than twice that for denser city routes.
+OSRM_STEPS_MAX_BYTES = 4 * 1024 * 1024
 SMALL_MAX_BYTES = 256 * 1024
 
 _CHUNK_BYTES = 64 * 1024

@@ -393,6 +393,124 @@
       "vehicle": "Truck T-2041 / Trailer TR-8812"
     }
   ],
+  "directions": [
+    {
+      "from": "current",
+      "to": "pickup",
+      "title": "Dallas, TX to Waco, TX",
+      "distance_miles": 96.8,
+      "steps": [
+        {
+          "kind": "depart",
+          "instruction": "Head south on Elm St",
+          "road": "Elm St",
+          "heading": "S",
+          "distance_miles": 1.2,
+          "mile": 0,
+          "lat": 32.7767,
+          "lon": -96.797
+        },
+        {
+          "kind": "road",
+          "instruction": "Take I-35E S",
+          "road": "I-35E",
+          "heading": "S",
+          "distance_miles": 45.3,
+          "mile": 1.2,
+          "lat": 32.76194,
+          "lon": -96.80379
+        },
+        {
+          "kind": "road",
+          "instruction": "Take I-35 S",
+          "road": "I-35",
+          "heading": "S",
+          "distance_miles": 47.5,
+          "mile": 46.5,
+          "lat": 32.20148,
+          "lon": -97.04909
+        },
+        {
+          "kind": "road",
+          "instruction": "Continue on Franklin Ave",
+          "road": "Franklin Ave",
+          "heading": "SW",
+          "distance_miles": 2.8,
+          "mile": 94,
+          "lat": 31.58621,
+          "lon": -97.14516
+        },
+        {
+          "kind": "arrive",
+          "instruction": "Arrive at Waco",
+          "road": "",
+          "heading": "",
+          "distance_miles": 0,
+          "mile": 96.8,
+          "lat": 31.5493,
+          "lon": -97.1467
+        }
+      ]
+    },
+    {
+      "from": "pickup",
+      "to": "dropoff",
+      "title": "Waco, TX to San Antonio, TX",
+      "distance_miles": 183.6,
+      "steps": [
+        {
+          "kind": "depart",
+          "instruction": "Head south on Austin Ave",
+          "road": "Austin Ave",
+          "heading": "S",
+          "distance_miles": 1.6,
+          "mile": 96.8,
+          "lat": 31.5493,
+          "lon": -97.1467
+        },
+        {
+          "kind": "road",
+          "instruction": "Take I-35 S",
+          "road": "I-35",
+          "heading": "S",
+          "distance_miles": 167.1,
+          "mile": 98.4,
+          "lat": 31.5293,
+          "lon": -97.15592
+        },
+        {
+          "kind": "road",
+          "instruction": "Take US-281 S",
+          "road": "US-281",
+          "heading": "S",
+          "distance_miles": 8.4,
+          "mile": 265.5,
+          "lat": 29.56767,
+          "lon": -98.33343
+        },
+        {
+          "kind": "road",
+          "instruction": "Continue on Commerce St",
+          "road": "Commerce St",
+          "heading": "SW",
+          "distance_miles": 6.5,
+          "mile": 273.9,
+          "lat": 29.48692,
+          "lon": -98.42396
+        },
+        {
+          "kind": "arrive",
+          "instruction": "Arrive at San Antonio",
+          "road": "",
+          "heading": "",
+          "distance_miles": 0,
+          "mile": 280.4,
+          "lat": 29.4241,
+          "lon": -98.4936
+        }
+      ]
+    }
+  ],
   "assumptions": [
     "Property-carrying driver on the 70-hour/8-day schedule, with no adverse driving conditions.",
     "The driver starts rested (10 or more hours off) with a full tank. The 14-hour window starts at departure.",

@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { PlanResponse, Stop } from '@/api/types'
+import type { MapPoint } from '@/features/map/TripMap'
 import { makePlan } from '@/test/makePlan'
 import { renderWithProviders } from '@/test/render'
 import { Results, type ResultsTab } from './Results'
@@ -13,6 +14,7 @@ interface HarnessProps {
   plan?: PlanResponse
   initialTab?: ResultsTab
   onSelectStop?: (id: string) => void
+  onSelectPoint?: (point: MapPoint) => void
   onSave?: () => void
   saved?: boolean
   saving?: boolean
@@ -22,6 +24,7 @@ function Harness({
   plan = makePlan(),
   initialTab = 'itinerary',
   onSelectStop = () => {},
+  onSelectPoint = () => {},
   onSave = () => {},
   saved = false,
   saving = false,
@@ -33,6 +36,7 @@ function Harness({
       tab={tab}
       onTabChange={setTab}
       onSelectStop={onSelectStop}
+      onSelectPoint={onSelectPoint}
       saving={saving}
       saved={saved}
       onSave={onSave}
@@ -150,13 +154,32 @@ describe('tabs', () => {
     setup()
     expect(screen.getByTestId('tab-itinerary')).toHaveAttribute('aria-selected', 'true')
     expect(shown('panel-itinerary')).toBe(true)
+    expect(shown('panel-directions')).toBe(false)
     expect(shown('panel-summary')).toBe(false)
     expect(shown('panel-logs')).toBe(false)
   })
 
+  it('lists the tabs in the order Itinerary, Directions, Daily logs, Summary', () => {
+    setup()
+    expect(
+      within(screen.getByRole('tablist'))
+        .getAllByRole('tab')
+        .map((t) => t.textContent),
+    ).toEqual(['Itinerary', 'Directions', 'Daily logs', 'Summary'])
+  })
+
+  it('shows the directions panel', async () => {
+    const user = setup()
+    await user.click(screen.getByTestId('tab-directions'))
+    expect(screen.getByTestId('tab-directions')).toHaveAttribute('aria-selected', 'true')
+    expect(shown('panel-directions')).toBe(true)
+    expect(shown('panel-itinerary')).toBe(false)
+    expect(screen.getAllByTestId(/^direction-leg-/)).toHaveLength(2)
+  })
+
   it('wires each tab to its panel', () => {
     setup()
-    for (const name of ['itinerary', 'logs', 'summary']) {
+    for (const name of ['itinerary', 'directions', 'logs', 'summary']) {
       const tab = screen.getByTestId(`tab-${name}`)
       const panel = screen.getByTestId(`panel-${name}`)
       expect(tab).toHaveAttribute('aria-controls', panel.id)
@@ -193,6 +216,9 @@ describe('tabs', () => {
     const user = setup()
     screen.getByTestId('tab-itinerary').focus()
     await user.keyboard('{ArrowRight}')
+    expect(screen.getByTestId('tab-directions')).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByTestId('tab-directions')).toHaveFocus()
+    await user.keyboard('{ArrowRight}')
     expect(screen.getByTestId('tab-logs')).toHaveAttribute('aria-selected', 'true')
     expect(screen.getByTestId('tab-logs')).toHaveFocus()
     await user.keyboard('{End}')
@@ -208,6 +234,7 @@ describe('tabs', () => {
   it('only the selected tab is in the tab order', () => {
     setup()
     expect(screen.getByTestId('tab-itinerary')).toHaveAttribute('tabindex', '0')
+    expect(screen.getByTestId('tab-directions')).toHaveAttribute('tabindex', '-1')
     expect(screen.getByTestId('tab-logs')).toHaveAttribute('tabindex', '-1')
     expect(screen.getByTestId('tab-summary')).toHaveAttribute('tabindex', '-1')
   })

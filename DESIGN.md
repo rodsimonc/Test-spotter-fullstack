@@ -54,6 +54,7 @@ Built in-house. Base styles live in `frontend/src/components/ui/`.
 | PlaceField | Stable | `features/trip-form/PlaceField.tsx` | Combobox with typeahead and a pick-on-map button. |
 | TripMap | Stable | `features/map/TripMap.tsx` | Leaflet map, stop markers, popups, legend. |
 | LogSheet, LogViewer | Stable | `features/logs/` | The paper form as SVG, with day navigation, PDF and print. |
+| Directions | Stable | `features/results/Directions.tsx`, `features/map/PointPulse.tsx` | Road-by-road tab, one card per leg. Lines are buttons that pan the map to that spot and show a pulse ring. Interstates get a deep teal chip, US and state routes an ink outline, street names quiet text. Falls back to a plain note when the router gave no steps. |
 
 ## Composition rules
 

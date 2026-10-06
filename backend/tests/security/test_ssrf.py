@@ -71,7 +71,7 @@ def test_urls_typed_into_place_labels_are_never_fetched(api, plan_payload, upstr
     api.post("/api/plan", plan_payload, format="json")
 
     assert_only_configured_hosts(upstreams)
-    assert len(upstreams.calls) == 1
+    assert len(upstreams.calls) == 2, "one call for the route and one for the turn list"
 
 
 @pytest.mark.parametrize("target", HOSTILE_TARGETS)

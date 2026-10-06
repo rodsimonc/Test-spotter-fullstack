@@ -76,6 +76,14 @@ class TripSerializer(TripSummarySerializer):
         fields = [*TripSummarySerializer.Meta.fields, "request", "result"]
         read_only_fields = fields
 
+    def to_representation(self, instance: Trip) -> dict[str, Any]:
+        data = super().to_representation(instance)
+        result = data.get("result")
+        if isinstance(result, dict) and "directions" not in result:
+            # Trips saved before directions existed. The contract says the field is always there.
+            data["result"] = {**result, "directions": []}
+        return data
+
 
 def default_title(request: PlanRequestData) -> str:
     """ "Dallas to Denver", from the first part of each label."""

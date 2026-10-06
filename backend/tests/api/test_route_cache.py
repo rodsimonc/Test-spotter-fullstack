@@ -2,17 +2,28 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import timedelta
 
 import pytest
 from django.db import DatabaseError
 from django.utils import timezone
 
-from apps.planner import services
+from apps.planner import directions, services
 from apps.planner.models import RouteCache
+from apps.planner.providers import osrm as osrm_client
 from apps.planner.types import RouteData, RouteLeg
 from tests.support.contract import assert_error
-from tests.support.osrm import DALLAS, DENVER, MEMPHIS, osrm_payload, register_osrm
+from tests.support.osrm import (
+    DALLAS,
+    DENVER,
+    MEMPHIS,
+    osrm_payload,
+    osrm_steps_payload,
+    register_osrm,
+    route_calls,
+    steps_calls,
+)
 
 URL = "/api/plan"
 WAYPOINTS = [DALLAS, MEMPHIS, DENVER]
@@ -32,45 +43,48 @@ def plan(api, payload):
 def test_the_first_plan_asks_the_router_and_stores_the_answer(api, plan_payload, osrm, rsps):
     plan(api, plan_payload)
 
-    assert len(rsps.calls) == 1
+    assert len(route_calls(rsps)) == 1
+    assert len(steps_calls(rsps)) == 1
     row = RouteCache.objects.get()
     assert row.key == services.route_cache_key(WAYPOINTS)
-    assert set(row.payload) == {"polyline", "leg_end_indices", "legs"}
+    assert set(row.payload) == {"polyline", "leg_end_indices", "legs", "directions"}
 
 
 def test_the_second_plan_for_the_same_trip_makes_no_router_call(api, plan_payload, osrm, rsps):
     first = plan(api, plan_payload)
     second = plan(api, plan_payload)
 
-    assert len(rsps.calls) == 1
+    assert len(route_calls(rsps)) == 1
+    assert len(steps_calls(rsps)) == 1, "a hit must not ask for the turn list again"
     assert second == first, "a cache hit and a miss must give the same numbers"
+    assert second["directions"], "the directions come back from the cache too"
 
 
 def test_a_change_of_cycle_hours_or_departure_still_hits_the_cache(api, plan_payload, osrm, rsps):
     plan(api, plan_payload)
     plan(api, plan_payload | {"cycle_used_hours": 3, "departure": "2026-12-01T05:30"})
-    assert len(rsps.calls) == 1
+    assert len(route_calls(rsps)) == 1
 
 
 def test_labels_do_not_matter_to_the_cache(api, plan_payload, osrm, rsps):
     plan(api, plan_payload)
     plan_payload["current"] = plan_payload["current"] | {"label": "A different name"}
     plan(api, plan_payload)
-    assert len(rsps.calls) == 1
+    assert len(route_calls(rsps)) == 1
 
 
 def test_points_within_about_ten_metres_share_a_route(api, plan_payload, osrm, rsps):
     plan(api, plan_payload)
     plan_payload["current"] = plan_payload["current"] | {"lat": DALLAS[0] + 0.00001}
     plan(api, plan_payload)
-    assert len(rsps.calls) == 1
+    assert len(route_calls(rsps)) == 1
 
 
 def test_points_a_few_hundred_metres_apart_get_their_own_route(api, plan_payload, osrm, rsps):
     plan(api, plan_payload)
     plan_payload["current"] = plan_payload["current"] | {"lat": DALLAS[0] + 0.003}
     plan(api, plan_payload)
-    assert len(rsps.calls) == 2
+    assert len(route_calls(rsps)) == 2
     assert RouteCache.objects.count() == 2
 
 
@@ -78,7 +92,7 @@ def test_the_pickup_and_dropoff_swapped_is_a_different_route(api, plan_payload, 
     plan(api, plan_payload)
     plan_payload["pickup"], plan_payload["dropoff"] = plan_payload["dropoff"], plan_payload["pickup"]
     plan(api, plan_payload)
-    assert len(rsps.calls) == 2
+    assert len(route_calls(rsps)) == 2
 
 
 def test_an_expired_row_is_fetched_again_and_replaced(api, plan_payload, osrm, rsps, settings):
@@ -89,7 +103,7 @@ def test_an_expired_row_is_fetched_again_and_replaced(api, plan_payload, osrm, r
 
     plan(api, plan_payload)
 
-    assert len(rsps.calls) == 2
+    assert len(route_calls(rsps)) == 2
     assert RouteCache.objects.get().created_at > old + timedelta(hours=24)
 
 
@@ -100,7 +114,7 @@ def test_a_row_just_inside_the_lifetime_is_still_used(api, plan_payload, osrm, r
 
     plan(api, plan_payload)
 
-    assert len(rsps.calls) == 1
+    assert len(route_calls(rsps)) == 1
 
 
 def test_storing_a_route_clears_out_other_expired_rows(api, plan_payload, osrm, settings):
@@ -119,7 +133,8 @@ def test_a_lifetime_of_zero_turns_the_cache_off(api, plan_payload, osrm, rsps, s
     plan(api, plan_payload)
     plan(api, plan_payload)
 
-    assert len(rsps.calls) == 2
+    assert len(route_calls(rsps)) == 2
+    assert len(steps_calls(rsps)) == 2
     assert not RouteCache.objects.exists()
 
 
@@ -149,10 +164,11 @@ def test_an_unreadable_cached_row_is_ignored_and_replaced(api, plan_payload, osr
 
     plan(api, plan_payload)
 
-    assert len(rsps.calls) == 1
-    assert set(RouteCache.objects.get(key=key).payload) == {"polyline", "leg_end_indices", "legs"}
+    assert len(route_calls(rsps)) == 1
+    assert set(RouteCache.objects.get(key=key).payload) == {"polyline", "leg_end_indices", "legs", "directions"}
     plan(api, plan_payload)
-    assert len(rsps.calls) == 1, "the repaired row should now be used"
+    assert len(route_calls(rsps)) == 1, "the repaired row should now be used"
+    assert len(steps_calls(rsps)) == 1
 
 
 def test_a_cache_that_cannot_be_written_does_not_fail_the_plan(api, plan_payload, osrm, monkeypatch):
@@ -169,7 +185,7 @@ def test_the_distance_cap_applies_to_cached_routes_too(api, plan_payload, osrm, 
     settings.MAX_ROUTE_MILES = 100
 
     assert_error(api.post(URL, plan_payload, format="json"), 422, "route_too_long")
-    assert len(rsps.calls) == 1
+    assert len(route_calls(rsps)) == 1
 
 
 def test_the_distance_cap_message_gives_both_numbers(api, plan_payload, osrm, settings):
@@ -230,6 +246,20 @@ def test_a_route_survives_the_round_trip_through_the_cache_format():
         assert a_lat == pytest.approx(b_lat, abs=1e-5) and a_lon == pytest.approx(b_lon, abs=1e-5)
 
 
+def test_a_route_with_directions_keeps_them_through_the_cache_format():
+    data = osrm_steps_payload()
+    raw = osrm_client.parse_steps(data)
+    stretches = directions.condense(raw, [leg["distance"] / 1609.344 for leg in data["routes"][0]["legs"]])
+    assert stretches is not None
+    original = replace(route_data(), directions=stretches)
+
+    payload = services.route_to_payload(original)
+
+    assert payload["directions"] == directions.to_payload(stretches)
+    assert services.route_from_payload(payload).directions == stretches
+    assert "directions" not in services.route_to_payload(route_data()), "no directions yet is not the same as none"
+
+
 def test_the_cached_payload_is_plain_json():
     import json
 
@@ -254,8 +284,6 @@ def test_the_waypoints_come_from_the_request_in_order(plan_payload):
 
 
 def test_osrm_fixture_builder_agrees_with_the_cache_roundtrip():
-    from apps.planner.providers import osrm
-
-    parsed = osrm.parse_route(osrm_payload())
+    parsed = osrm_client.parse_route(osrm_payload())
     again = services.route_from_payload(services.route_to_payload(parsed))
     assert again.leg_end_indices == parsed.leg_end_indices

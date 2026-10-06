@@ -131,7 +131,7 @@ test.describe('phone layout with results', () => {
   })
 
   test('does not scroll sideways on any tab', async ({ page }) => {
-    for (const tab of ['itinerary', 'logs', 'summary'] as const) {
+    for (const tab of ['itinerary', 'directions', 'logs', 'summary'] as const) {
       await openTab(page, tab)
       await expectNoSideScroll(page, `the ${tab} tab`)
     }

@@ -94,15 +94,19 @@ Stop anything already on those ports first. The scripts `scripts/dev.ps1` and `s
 
 ### The fake upstream
 
-`e2e/fake-upstream/server.mjs` speaks the real response shapes from the build spec. OSRM answers with a great-circle line scaled by a road factor of 1.2. Photon knows about 40 US cities and a few streets. Nominatim reverse finds the nearest city. A handful of magic places make it misbehave on purpose:
+`e2e/fake-upstream/server.mjs` speaks the real response shapes from the build spec. OSRM answers with a great-circle line scaled by a road factor of 1.2. Ask it for `steps=true` and each leg also comes back as 6 to 12 steps along made-up roads (I-30, I-40, US-287, a frontage road) with a street at each end, distances that add up to the leg, a compass bearing and a point on the route for every step, and a final `arrive`. The same request always gets the same steps. Photon knows about 40 US cities and a few streets. Nominatim reverse finds the nearest city. A handful of magic places make it misbehave on purpose:
 
 | Place | Coordinates | What the fake does |
 |---|---|---|
 | Nowhere Reef | 30.0, -40.0 | OSRM answers `NoRoute`, so the API returns 422 `no_route` |
 | Brokenbridge, KS | 38.4, -98.8 | OSRM answers HTTP 500, so the API returns 502 `upstream_error` |
 | Garbled Gulch, OK | 36.0, -100.0 | OSRM answers 200 with text that isn't JSON, so 502 |
-| Slowpoke Springs, NE | 40.2, -99.9 | OSRM waits `FAKE_SLOW_MS` (2.5 s), then answers |
+| Slowpoke Springs, NE | 40.2, -99.9 | OSRM waits `FAKE_SLOW_MS` (2.5 s), then answers. The steps request waits too |
 | Pwned Plains, TX | 32.95, -97.2 | A place whose name is HTML, for the injection specs |
+| Amarillo, TX | 35.2, -101.8 | Only the steps request fails (400 `TooBig`). The route request is fine, so the plan works and its directions are `[]` |
+| Oklahoma City, OK | 35.47, -97.52 | The steps request names the street beside this point with HTML, for the Directions injection spec |
+
+The last two are plain coordinates in `magic.mjs` (`STEPS_FAIL_POINT`, `HOSTILE_ROAD_POINT`), not places Photon can find. A spec passes them in a share link.
 
 Searching for `boom` makes Photon answer 503. `GET /__calls?service=osrm&contains=<text>` lists what the fake was asked, and `POST /__reset` clears the log. Its own tests run with `node --test e2e/fake-upstream/server.test.mjs`.
 
@@ -112,8 +116,9 @@ Searching for `boom` makes Photon answer 503. `GET /__calls?service=osrm&contain
 |---|---|
 | `smoke.spec.ts` | First load, CSRF then session bootstrap, deep links, health check |
 | `trip-form.spec.ts` | Typeahead, clear, swap, reset, example, cycle hours, departure and zone, log details, validation, pick on map |
-| `planning.spec.ts` | Planning the example trip, stress trips, the 34-hour restart, errors with retry, route cache, share link on load |
-| `results.spec.ts` | Tabs, cycle meter, legs table, assumptions |
+| `planning.spec.ts` | Planning the example trip, stress trips, the 34-hour restart, errors with retry, route cache (one route call and one steps call, then none), share link on load |
+| `results.spec.ts` | Tabs (itinerary, directions, daily logs, summary), cycle meter, legs table, assumptions |
+| `directions.spec.ts` | Tab order and arrow keys, the contract as the API sends it, a card per leg and a button per line, click and keyboard to move the map, the empty state, a road name made of HTML, a 390 px phone, axe |
 | `map.spec.ts` | Markers, legend, stop card to popup, attribution |
 | `logs.spec.ts` | Log viewer, sheet numbers, PDF download, print |
 | `export.spec.ts` | PDF names and toasts, page counts on long trips, print from either tab |
@@ -147,12 +152,15 @@ Elements the specs touch carry `data-testid`. Names are lowercase and hyphenated
 |---|---|
 | Form | `field-current`, `field-pickup`, `field-dropoff`, `suggestion`, `btn-clear-*`, `btn-pick-*`, `btn-swap`, `input-cycle`, `slider-cycle`, `input-departure`, `select-timezone`, `btn-log-details`, `input-driver-name` and the other nine header inputs, `btn-plan`, `btn-example`, `btn-reset`, `form-error-*` |
 | Map | `map`, `pick-banner`, `marker-<stop id>`, `map-legend`, `empty-state` |
-| Results | `stats-strip`, `stat-distance`, `stat-driving`, `stat-trip-time`, `stat-arrival`, `stat-days`, `stat-fuel`, `warnings`, `tab-*`, `panel-*`, `stop-card-<id>`, `day-group-<n>`, `btn-share`, `btn-pdf`, `btn-print`, `btn-save`, `cycle-meter`, `assumptions`, `loading`, `error-banner`, `btn-retry`, `toast` |
+| Results | `stats-strip`, `stat-distance`, `stat-driving`, `stat-trip-time`, `stat-arrival`, `stat-days`, `stat-fuel`, `warnings`, `tab-itinerary`, `tab-directions`, `tab-logs`, `tab-summary`, `panel-*` (same four names), `stop-card-<id>`, `day-group-<n>`, `btn-share`, `btn-pdf`, `btn-print`, `btn-save`, `cycle-meter`, `assumptions`, `loading`, `error-banner`, `btn-retry`, `toast` |
+| Directions | `direction-leg-<leg index>`, `direction-step-<leg index>-<step index>`, `directions-empty` (indexes start at 0) |
 | Logs | `log-viewer`, `log-sheet-<day>`, `btn-prev-day`, `btn-next-day`, `day-chip-<n>`, `btn-pdf-logs`, `btn-print-logs`, `log-print-root` |
 | Auth | `btn-sign-in`, `btn-sign-up`, `auth-dialog`, `tab-auth-login`, `tab-auth-register`, `input-auth-email`, `input-auth-password`, `input-auth-name`, `btn-auth-submit`, `btn-auth-close`, `auth-error`, `btn-toggle-password`, `account-menu`, `btn-my-trips`, `btn-sign-out` |
 | Trips | `trips-drawer`, `trip-row-<id>`, `btn-open-trip-<id>`, `btn-rename-trip-<id>`, `input-rename-trip-<id>`, `btn-delete-trip-<id>`, `btn-confirm-delete`, `btn-cancel-delete`, `trips-empty`, `btn-close-trips`, `btn-retry-trips` |
 
 Add an id in the component first, then use it. Don't invent one in a spec.
+
+The Directions specs read where the map is looking from its tiles (`helpers/directions.ts`, `mapView`), because Leaflet puts no handle on `window`. Every tile's URL holds its zoom, column and row, and the tile under the middle of the map gives the middle's longitude and latitude. A line counts as chosen when the map is at zoom 10 or closer and centred within 0.05 degrees of the step.
 
 ### Accessibility checks
 

@@ -55,7 +55,7 @@ export function Tabs<T extends string>({
       aria-label={label}
       onKeyDown={onKeyDown}
       className={clsx(
-        variant === 'underline' && 'flex gap-1 border-b border-ink-200',
+        variant === 'underline' && 'flex gap-0.5 border-b border-ink-200 sm:gap-1',
         variant === 'segmented' && 'grid auto-cols-fr grid-flow-col rounded-xl bg-ink-100 p-1',
         className,
       )}
@@ -77,7 +77,7 @@ export function Tabs<T extends string>({
               'inline-flex items-center justify-center gap-2 font-semibold transition-colors duration-150',
               variant === 'underline' &&
                 clsx(
-                  '-mb-px h-11 border-b-2 px-3 text-sm sm:px-4',
+                  '-mb-px h-11 flex-1 border-b-2 px-0.5 text-[13px] sm:flex-none sm:px-4 sm:text-sm',
                   selected
                     ? 'border-teal-600 text-teal-950'
                     : 'border-transparent text-ink-600 hover:text-teal-950',
@@ -92,7 +92,7 @@ export function Tabs<T extends string>({
             )}
           >
             {tab.icon ? (
-              // Three labelled tabs don't fit beside their icons on a 390 px phone, so the icons give way.
+              // Four labelled tabs don't fit beside their icons on a 390 px phone, so the icons give way.
               <span
                 aria-hidden="true"
                 className={variant === 'underline' ? 'hidden sm:inline-flex' : 'inline-flex'}

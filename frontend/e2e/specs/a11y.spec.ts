@@ -221,7 +221,7 @@ test.describe('page structure', () => {
   test('marks the results tabs for assistive technology', async ({ page }) => {
     await planExample(page)
     await expect(page.getByRole('tablist', { name: 'Trip results' })).toBeVisible()
-    await expect(page.getByRole('tab')).toHaveCount(3)
+    await expect(page.getByRole('tab')).toHaveCount(4)
     await expect(page.getByRole('tab', { selected: true })).toHaveCount(1)
     await expect(page.getByTestId('panel-itinerary')).toHaveAttribute('role', 'tabpanel')
   })
@@ -229,6 +229,9 @@ test.describe('page structure', () => {
   test('moves between result tabs with the arrow keys', async ({ page }) => {
     await planExample(page)
     await page.getByTestId('tab-itinerary').focus()
+    await page.keyboard.press('ArrowRight')
+    await expect(page.getByTestId('tab-directions')).toBeFocused()
+    await expect(page.getByTestId('panel-directions')).toBeVisible()
     await page.keyboard.press('ArrowRight')
     await expect(page.getByTestId('tab-logs')).toBeFocused()
     await expect(page.getByTestId('panel-logs')).toBeVisible()
@@ -365,6 +368,8 @@ test.describe('keyboard', () => {
 
     // Tabs use a roving tabindex: Tab lands on the selected tab, arrow keys move between them.
     await tabTo(page, 'tab-itinerary')
+    await page.keyboard.press('ArrowRight')
+    await expect(page.getByTestId('panel-directions')).toBeVisible()
     await page.keyboard.press('ArrowRight')
     await expect(page.getByTestId('panel-logs')).toBeVisible()
     await tabTo(page, 'btn-next-day')

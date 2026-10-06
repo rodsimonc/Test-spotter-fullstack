@@ -172,6 +172,7 @@ def test_plan_response_fields_match_the_documented_contract():
         "stops",
         "segments",
         "logs",
+        "directions",
         "assumptions",
         "warnings",
     ]

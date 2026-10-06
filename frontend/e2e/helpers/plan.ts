@@ -190,7 +190,10 @@ export async function expectStatsToMatch(page: Page, plan: PlanResponse): Promis
 }
 
 /** Opens the tab and waits for its panel. */
-export async function openTab(page: Page, tab: 'itinerary' | 'logs' | 'summary'): Promise<void> {
+export async function openTab(
+  page: Page,
+  tab: 'itinerary' | 'directions' | 'logs' | 'summary',
+): Promise<void> {
   await page.getByTestId(`tab-${tab}`).click()
   await expect(page.getByTestId(`panel-${tab}`)).toBeVisible()
 }
