@@ -33,6 +33,57 @@ Press **Try an example** to plan Dallas to Memphis to Denver with 24 hours alrea
 - Shares a trip as a link. Opening it plans the trip again, with no account needed.
 - Lets you save trips, rename them and open them later, once you've made an account.
 
+## How it fits together
+
+One Vercel project serves the React app and runs Django behind `/api`, so the browser only talks to one origin. Django talks to three free map services and to Postgres.
+
+```mermaid
+flowchart LR
+  subgraph Browser
+    SPA["React app<br/>form, map, directions, log sheets"]
+  end
+
+  subgraph Vercel["Vercel project (one origin)"]
+    Fn["Python function<br/>api/index.py runs Django"]
+    Static["Static files<br/>frontend/dist"]
+  end
+
+  subgraph Outside["Outside services"]
+    DB[("Postgres on Neon<br/>SQLite locally")]
+    OSRM["OSRM<br/>routes and steps"]
+    Photon["Photon<br/>place search"]
+    Nominatim["Nominatim<br/>map-click lookups"]
+    Tiles["OpenStreetMap<br/>map tiles"]
+  end
+
+  SPA -- "/api/* with a session cookie" --> Fn
+  SPA -- "HTML, JS, CSS" --> Static
+  SPA -- "tiles" --> Tiles
+  Fn --> DB
+  Fn --> OSRM
+  Fn --> Photon
+  Fn --> Nominatim
+```
+
+What happens when you press **Plan trip**:
+
+```mermaid
+flowchart TD
+  A["Trip form<br/>3 places, cycle hours, departure time"] --> B["POST /api/plan<br/>every field validated"]
+  B --> C["Route<br/>OSRM, cached in the database"]
+  B --> D["Steps<br/>OSRM, best effort"]
+  C --> E["simulate.py<br/>walks the trip minute by minute<br/>and inserts fuel, breaks, rests, restarts"]
+  E --> F["logs.py<br/>one sheet per day, remarks, totals, recap"]
+  G["Gazetteer<br/>nearest town names"] --> F
+  D --> H["directions.py<br/>merges steps by road"]
+  E --> I["assemble.py<br/>one plan response"]
+  F --> I
+  H --> I
+  I --> J["React app<br/>map, itinerary, directions,<br/>SVG log sheets, PDF"]
+```
+
+The rules the engine follows are in [docs/hos-rules.md](docs/hos-rules.md). The longer write-up is in [docs/architecture.md](docs/architecture.md).
+
 ## Quickstart
 
 You need Python 3.12 or newer and Node 22 or newer.
@@ -184,23 +235,47 @@ npx playwright test
 
 [docs/testing.md](docs/testing.md) covers every suite, the environment variables, the fake upstream and how to run the same specs against a deployed site.
 
-## Project layout
+## Project structure
 
 ```
-api/            Vercel entry point for Django
-backend/        Django project
-  apps/planner/   Hours-of-service engine, route providers, plan endpoint
-  apps/accounts/  Email and password accounts
-  apps/trips/     Saved trips
-  tests/          pytest suites
-frontend/       React app
-  src/features/   trip-form, map, results, logs, auth, trips
-  e2e/            Playwright specs, helpers and the fake upstream
-docs/           Architecture, HOS rules, API contract, testing
-scripts/        dev.ps1 and dev.sh
-.github/        CI, security scans, migration workflow, Dependabot
-AGENTS.md  CLAUDE.md  DESIGN.md  specs.md  CHANGELOG.md   Project conventions and contract
-DEPLOY.md  ERROR-CONTRACT.md  openapi.yaml  requests.http  API and deploy docs
+Test-spotter-fullstack/
+├── api/
+│   └── index.py               # Vercel entry: exposes Django as a Python function
+├── backend/
+│   ├── config/                # Django settings, urls, wsgi
+│   ├── apps/
+│   │   ├── planner/           # The plan endpoint and everything behind it
+│   │   │   ├── hos/           # Engine: simulate.py, logs.py, geometry.py
+│   │   │   ├── gazetteer/     # Bundled GeoNames towns for the log remarks
+│   │   │   ├── providers/     # OSRM, Photon and Nominatim clients
+│   │   │   ├── assemble.py    # Builds the plan response
+│   │   │   └── directions.py  # Merges OSRM steps by road
+│   │   ├── accounts/          # Email and password accounts
+│   │   ├── trips/             # Saved trips
+│   │   └── common/            # Errors, throttling, client address
+│   ├── scripts/               # build_gazetteer.py
+│   └── tests/                 # engine, gazetteer, api, security, accounts, trips
+├── frontend/
+│   ├── src/
+│   │   ├── api/               # Client, hooks and types.ts (the contract)
+│   │   ├── components/        # ui/ and layout/
+│   │   ├── features/          # trip-form, map, results, logs, auth, trips
+│   │   ├── lib/               # Share links, time and number formatting
+│   │   └── styles/            # Design tokens (Tailwind v4 @theme)
+│   └── e2e/                   # Playwright specs, helpers, fake OSRM/Photon/Nominatim
+├── docs/                      # Architecture, HOS rules, API contract, testing, img/
+├── scripts/                   # dev.ps1, dev.sh, vercel-build.sh
+├── .github/                   # CI, security scans, migrate workflow, Dependabot
+├── AGENTS.md                  # Conventions for AI agents
+├── CLAUDE.md                  # Context for Claude Code
+├── DESIGN.md                  # Design system and UI standards
+├── specs.md                   # The project contract: stack, structure, decisions
+├── CHANGELOG.md
+├── DEPLOY.md                  # Vercel setup and what goes wrong
+├── ERROR-CONTRACT.md          # The one error shape and every code
+├── openapi.yaml               # API description
+├── requests.http              # Ready-to-run request collection
+└── vercel.json                # Build, rewrites, security headers
 ```
 
 ## Credits
