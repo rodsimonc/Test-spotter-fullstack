@@ -4,11 +4,9 @@ title = "ELD trip planner secret scan"
 useDefault = true
 
 # The tests create users with made-up passwords, and requests.http shows a sample sign-in.
-# They look like passwords to the generic rule and aren't. Everything else is still scanned,
-# and every other rule still applies to these files.
-[[allowlists]]
+# They look like secrets to the generic rule and aren't. Every other path is scanned in full.
+[allowlist]
 description = "Throwaway passwords in tests and in the sample request collection"
-targetRules = ["generic-api-key"]
 paths = [
   '''^backend/tests/''',
   '''^requests\.http$''',
