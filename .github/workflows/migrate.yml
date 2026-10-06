@@ -1,0 +1,67 @@
+name: Migrate production database
+
+# Manual only. Run it after a deploy that adds a migration, or once on a new database.
+# It applies migrations and creates the table that backs request throttling.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "migrate" to run against the production database'
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+# Two migrations at once can deadlock. Queue them instead.
+concurrency:
+  group: migrate-production
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    name: Migrate
+    if: ${{ inputs.confirm == 'migrate' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Create an environment named "production" in the repository settings to add a reviewer gate.
+    environment: production
+    env:
+      DJANGO_DEBUG: '0'
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      # Django refuses to start without a key. Migrations do not use it, so any value works.
+      DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+    steps:
+      - name: Check the secrets are there
+        run: |
+          if [ -z "$DATABASE_URL" ]; then
+            echo "::error::Add a DATABASE_URL secret (repository or the production environment) first."
+            exit 1
+          fi
+          if [ -z "$DJANGO_SECRET_KEY" ]; then
+            echo "DJANGO_SECRET_KEY is not set. Using a throwaway key, which is fine for migrations."
+            echo "DJANGO_SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_urlsafe(64))')" >> "$GITHUB_ENV"
+          fi
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Apply migrations
+        working-directory: backend
+        run: python manage.py migrate --noinput
+
+      - name: Create the throttle cache table
+        working-directory: backend
+        run: python manage.py createcachetable
+
+      - name: Show what is applied
+        working-directory: backend
+        run: python manage.py showmigrations --plan
