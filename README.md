@@ -4,18 +4,18 @@ Give it a current location, a pickup, a dropoff and the hours you've already use
 
 It's built for a property-carrying driver on the 70-hour/8-day schedule, with Django on the back and React on the front.
 
-<!-- LIVE_URL: the lead adds the Vercel address here once the site is deployed. -->
-**Live site:** _to be added after the first deploy_
+**Live site:** https://test-spotter-fullstack.vercel.app
 
-<!-- SCREENSHOTS:START
-     The lead adds screenshots here. Suggested set, in this order:
-       1. Trip form and map with a planned route (desktop)
-       2. Daily log sheet, one filled day
-       3. Itinerary tab with the day-by-day timeline
-       4. The same screen on a phone (390 px wide)
-     Use docs/img/*.png and plain Markdown images.
-SCREENSHOTS:END -->
-> **Screenshots go here.** This block is a placeholder.
+Press **Try an example** to plan Dallas to Memphis to Denver with 24 hours already used.
+
+![The trip form, the route map with every stop, and the results summary](docs/img/trip-planner.png)
+
+<p>
+  <img src="docs/img/daily-log-sheet.png" alt="Day 1 of the example trip as a filled-out daily log sheet" width="58%">
+  <img src="docs/img/phone.png" alt="The results on a phone, 390 pixels wide" width="28%">
+</p>
+
+![The day-by-day itinerary with fuel stops, breaks and rests](docs/img/itinerary.png)
 
 ## What it does
 

@@ -12,7 +12,7 @@ servers:
   - url: http://127.0.0.1:8000
     description: Local Django
   - url: https://test-spotter-fullstack.vercel.app
-    description: Production (update after the first deploy)
+    description: Production
 tags:
   - name: Health
   - name: Geocoding

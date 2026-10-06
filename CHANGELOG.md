@@ -21,7 +21,8 @@ First release. Built for the Spotter full-stack assessment.
 - **Tests.** Engine unit, golden and fuzz tests with an independent compliance checker, API and security tests, component tests, and a Playwright suite that covers every button, accessibility scans and a phone layout.
 - **CI and security.** GitHub Actions for lint, tests and `check --deploy`; scans for secrets, dependencies and code; a manual migrate workflow; Dependabot.
 - **Project docs** in the bootcamp structure: `AGENTS.md`, `CLAUDE.md`, `DESIGN.md`, `specs.md`, `CHANGELOG.md`, `DEPLOY.md`, `ERROR-CONTRACT.md`, `openapi.yaml`, `requests.http`.
-- **Vercel setup**: `vercel.json` with security headers and a strict content security policy, `api/index.py`, pinned `requirements.txt`.
+- **Vercel setup**: `vercel.json` with security headers and a strict content security policy, `api/index.py`, pinned `requirements.txt`. Production builds run `migrate` and `createcachetable` first (`scripts/vercel-build.sh`), because the Neon connection string is a Sensitive variable that only the build and the function can read.
+- **Live site** at https://test-spotter-fullstack.vercel.app, with README screenshots taken from it.
 
 ### Known limits
 

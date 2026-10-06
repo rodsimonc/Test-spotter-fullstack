@@ -64,10 +64,17 @@ vercel deploy --prod
 
 You can skip the CLI. Import the GitHub repository in the dashboard, keep the root directory at the repository root, and let `vercel.json` decide the build. Every push to `main` then deploys on its own.
 
-<!-- VERCEL_NOTES: the lead adds the runtime details checked against current Vercel docs here
-     (Python version, bundle size, function duration, region). -->
+### What the first deploy taught us
+
+- **Python version.** `.python-version` pins 3.12. Vercel offers 3.12, 3.13 and 3.14, and 3.12 is what CI tests.
+- **Why `"framework": null`.** If Vercel detects a Django preset (it looks for `manage.py`), Django answers every request and the React build is never served. With the preset off, `api/index.py` becomes the function and `vercel.json` rewrites `/api/*` to it.
+- **Turn off Vercel Authentication.** New projects put a login wall in front of every deployment. Open Settings, Deployment Protection, and set Vercel Authentication to Disabled (or to protect previews only). Until you do, visitors who aren't you see a Vercel sign-in page.
+- **Neon variables are Sensitive.** The integration marks `DATABASE_URL` and its siblings as Sensitive, so `vercel env pull` writes `[SENSITIVE]` placeholders and they can't be read back. Only the build and the running function can see them.
+- **Auto-deploys.** `vercel link` can't connect the GitHub repository until the Vercel GitHub app has access to it. Install it from Settings, Git in the project, and every push to `main` then deploys on its own. Until then, deploy with `vercel deploy --prod`.
 
 ## 4. Migrate
+
+**On Vercel this happens for you.** Because the database address is a Sensitive variable, production builds run `migrate` and `createcachetable` themselves, from `scripts/vercel-build.sh`, before the React build. Both are safe to repeat. Preview builds skip it. The two options below are for other hosts, or for running a migration without a deploy.
 
 A fresh database has no tables. Apply the migrations and create the throttle table. Do this once, and again after any release that adds a migration.
 

@@ -98,6 +98,7 @@ Both      scripts/dev.ps1, dev.sh     Django and Vite together
 
 - **Monorepo or single repo?** Single repo, two folders.
 - **Hosting?** One Vercel project. Same origin for the SPA and the API, so no CORS.
+- **Migrations on Vercel?** Production builds run them (`scripts/vercel-build.sh`). The Neon variables are Sensitive, so the address can't be copied out to run them by hand. The manual workflow in `.github/workflows/migrate.yml` stays for other hosts.
 - **Maps?** OSM tiles, OSRM, Photon, Nominatim. No API keys.
 - **Place names in logs?** Bundled GeoNames towns of 5,000 people or more.
 - **Drive time?** The slower of OSRM's estimate and distance at 60 mph.
