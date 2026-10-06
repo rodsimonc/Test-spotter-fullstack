@@ -21,6 +21,7 @@ from tests.support.prod_settings import ENV_NAMES
 ROOT = Path(__file__).resolve().parents[3]
 BACKEND = ROOT / "backend"
 VERCEL = json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
+BUILD_SCRIPT = ROOT / "scripts" / "vercel-build.sh"
 
 # The policy from the build spec, written out in full so a change to it has to be deliberate.
 SPEC_CSP = (
@@ -43,10 +44,25 @@ def csp_directives() -> dict[str, list[str]]:
 # vercel.json -----------------------------------------------------------------------------------
 
 
-def test_vercel_json_builds_the_frontend_into_the_output_folder():
-    assert VERCEL["buildCommand"] == "cd frontend && npm ci && npm run build"
+def test_vercel_json_runs_the_build_script_and_serves_the_frontend_output():
+    assert VERCEL["buildCommand"] == "bash scripts/vercel-build.sh"
     assert VERCEL["outputDirectory"] == "frontend/dist"
     assert VERCEL["framework"] is None
+
+
+def test_the_build_script_builds_the_frontend():
+    script = BUILD_SCRIPT.read_text(encoding="utf-8")
+    assert re.search(r"cd frontend\s+npm ci\s+npm run build", script)
+
+
+def test_the_build_script_migrates_production_builds_only_and_before_the_frontend_build():
+    script = BUILD_SCRIPT.read_text(encoding="utf-8")
+    assert 'if [ "${VERCEL_ENV:-}" = "production" ]' in script
+    assert "manage.py migrate --noinput" in script
+    assert "manage.py createcachetable" in script
+    # Vercel puts the function's own packages on PYTHONPATH. They would shadow the clean venv.
+    assert "unset PYTHONPATH" in script
+    assert script.index("migrate --noinput") < script.index("npm run build")
 
 
 def test_the_python_function_gets_the_backend_and_thirty_seconds():
