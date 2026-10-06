@@ -1,0 +1,408 @@
+{
+  "request": {
+    "current": {
+      "label": "Dallas, Texas, United States",
+      "lat": 32.7767,
+      "lon": -96.797
+    },
+    "pickup": {
+      "label": "Waco, Texas, United States",
+      "lat": 31.5493,
+      "lon": -97.1467
+    },
+    "dropoff": {
+      "label": "San Antonio, Texas, United States",
+      "lat": 29.4241,
+      "lon": -98.4936
+    },
+    "cycle_used_hours": 12,
+    "departure": "2026-10-14T08:00",
+    "timezone": "America/Chicago",
+    "header": {
+      "driver_name": "Alex Rivera",
+      "co_driver_name": "",
+      "carrier_name": "Prairie Line Freight LLC",
+      "main_office_address": "4100 Elm St, Dallas, TX",
+      "home_terminal_address": "Dallas, TX",
+      "truck_number": "T-2041",
+      "trailer_number": "TR-8812",
+      "shipper": "Clearwater Beverage Co.",
+      "commodity": "Bottled water, palletized",
+      "shipping_doc_no": "BOL 118204"
+    }
+  },
+  "summary": {
+    "distance_miles": 280.4,
+    "driving_minutes": 281,
+    "on_duty_minutes": 401,
+    "elapsed_minutes": 401,
+    "depart_at": "2026-10-14T08:00:00-05:00",
+    "arrive_at": "2026-10-14T14:41:00-05:00",
+    "days": 1,
+    "fuel_stops": 0,
+    "breaks": 0,
+    "rests": 0,
+    "restarts": 0,
+    "cycle_used_start_hours": 12,
+    "cycle_used_end_hours": 18.68,
+    "legs": [
+      {
+        "from": "current",
+        "to": "pickup",
+        "distance_miles": 96.8,
+        "duration_minutes": 97,
+        "osrm_duration_minutes": 88
+      },
+      {
+        "from": "pickup",
+        "to": "dropoff",
+        "distance_miles": 183.6,
+        "duration_minutes": 184,
+        "osrm_duration_minutes": 167
+      }
+    ]
+  },
+  "route": {
+    "geometry": [
+      [
+        32.7767,
+        -96.797
+      ],
+      [
+        32.63343,
+        -96.86288
+      ],
+      [
+        32.48637,
+        -96.92876
+      ],
+      [
+        32.33317,
+        -96.99464
+      ],
+      [
+        32.17383,
+        -97.06052
+      ],
+      [
+        32.0107,
+        -97.1264
+      ],
+      [
+        31.86519,
+        -97.13317
+      ],
+      [
+        31.71139,
+        -97.13993
+      ],
+      [
+        31.5493,
+        -97.1467
+      ],
+      [
+        31.40757,
+        -97.21207
+      ],
+      [
+        31.2572,
+        -97.27743
+      ],
+      [
+        31.0982,
+        -97.3428
+      ],
+      [
+        30.94296,
+        -97.42286
+      ],
+      [
+        30.78353,
+        -97.50292
+      ],
+      [
+        30.61733,
+        -97.58298
+      ],
+      [
+        30.44436,
+        -97.66304
+      ],
+      [
+        30.2672,
+        -97.7431
+      ],
+      [
+        30.08397,
+        -97.84225
+      ],
+      [
+        29.8833,
+        -97.9414
+      ],
+      [
+        29.77823,
+        -98.07945
+      ],
+      [
+        29.66747,
+        -98.2175
+      ],
+      [
+        29.54863,
+        -98.35555
+      ],
+      [
+        29.4241,
+        -98.4936
+      ]
+    ],
+    "bounds": [
+      [
+        29.4241,
+        -98.4936
+      ],
+      [
+        32.7767,
+        -96.797
+      ]
+    ],
+    "leg_end_indices": [
+      8,
+      22
+    ]
+  },
+  "stops": [
+    {
+      "id": "s1",
+      "kind": "start",
+      "title": "Start",
+      "place": "Dallas, TX",
+      "lat": 32.7767,
+      "lon": -96.797,
+      "mile": 0,
+      "arrive_at": "2026-10-14T08:00:00-05:00",
+      "depart_at": "2026-10-14T08:00:00-05:00",
+      "duration_minutes": 0,
+      "day": 1,
+      "note": "Departure from the current location."
+    },
+    {
+      "id": "s2",
+      "kind": "pickup",
+      "title": "Pickup",
+      "place": "Waco, TX",
+      "lat": 31.5493,
+      "lon": -97.1467,
+      "mile": 96.8,
+      "arrive_at": "2026-10-14T09:37:00-05:00",
+      "depart_at": "2026-10-14T10:37:00-05:00",
+      "duration_minutes": 60,
+      "day": 1,
+      "note": "Loading takes 1 hour."
+    },
+    {
+      "id": "s3",
+      "kind": "dropoff",
+      "title": "Dropoff",
+      "place": "San Antonio, TX",
+      "lat": 29.4241,
+      "lon": -98.4936,
+      "mile": 280.4,
+      "arrive_at": "2026-10-14T13:41:00-05:00",
+      "depart_at": "2026-10-14T14:41:00-05:00",
+      "duration_minutes": 60,
+      "day": 1,
+      "note": "Unloading takes 1 hour."
+    },
+    {
+      "id": "s4",
+      "kind": "end",
+      "title": "End of trip",
+      "place": "San Antonio, TX",
+      "lat": 29.4241,
+      "lon": -98.4936,
+      "mile": 280.4,
+      "arrive_at": "2026-10-14T14:41:00-05:00",
+      "depart_at": "2026-10-14T14:41:00-05:00",
+      "duration_minutes": 0,
+      "day": 1,
+      "note": "Off duty until midnight."
+    }
+  ],
+  "segments": [
+    {
+      "id": 1,
+      "status": "driving",
+      "kind": "drive",
+      "start_at": "2026-10-14T08:00:00-05:00",
+      "end_at": "2026-10-14T09:37:00-05:00",
+      "minutes": 97,
+      "start_mile": 0,
+      "end_mile": 96.8,
+      "place": "Dallas, TX",
+      "note": "Departed, driving to pickup"
+    },
+    {
+      "id": 2,
+      "status": "on_duty",
+      "kind": "pickup",
+      "start_at": "2026-10-14T09:37:00-05:00",
+      "end_at": "2026-10-14T10:37:00-05:00",
+      "minutes": 60,
+      "start_mile": 96.8,
+      "end_mile": 96.8,
+      "place": "Waco, TX",
+      "note": "Pickup, loading (1 hr)"
+    },
+    {
+      "id": 3,
+      "status": "driving",
+      "kind": "drive",
+      "start_at": "2026-10-14T10:37:00-05:00",
+      "end_at": "2026-10-14T13:41:00-05:00",
+      "minutes": 184,
+      "start_mile": 96.8,
+      "end_mile": 280.4,
+      "place": "Waco, TX",
+      "note": "Driving to dropoff"
+    },
+    {
+      "id": 4,
+      "status": "on_duty",
+      "kind": "dropoff",
+      "start_at": "2026-10-14T13:41:00-05:00",
+      "end_at": "2026-10-14T14:41:00-05:00",
+      "minutes": 60,
+      "start_mile": 280.4,
+      "end_mile": 280.4,
+      "place": "San Antonio, TX",
+      "note": "Dropoff, unloading (1 hr)"
+    }
+  ],
+  "logs": [
+    {
+      "day": 1,
+      "date": "2026-10-14",
+      "from_place": "Dallas, TX",
+      "to_place": "San Antonio, TX",
+      "total_miles_driving": 280.4,
+      "total_mileage_today": 280.4,
+      "entries": [
+        {
+          "status": "off_duty",
+          "kind": "idle",
+          "start_min": 0,
+          "end_min": 480,
+          "place": "Dallas, TX",
+          "note": "Off duty"
+        },
+        {
+          "status": "driving",
+          "kind": "drive",
+          "start_min": 480,
+          "end_min": 577,
+          "place": "Dallas, TX",
+          "note": "Departed, driving to pickup"
+        },
+        {
+          "status": "on_duty",
+          "kind": "pickup",
+          "start_min": 577,
+          "end_min": 637,
+          "place": "Waco, TX",
+          "note": "Pickup, loading (1 hr)"
+        },
+        {
+          "status": "driving",
+          "kind": "drive",
+          "start_min": 637,
+          "end_min": 821,
+          "place": "Waco, TX",
+          "note": "Driving to dropoff"
+        },
+        {
+          "status": "on_duty",
+          "kind": "dropoff",
+          "start_min": 821,
+          "end_min": 881,
+          "place": "San Antonio, TX",
+          "note": "Dropoff, unloading (1 hr)"
+        },
+        {
+          "status": "off_duty",
+          "kind": "idle",
+          "start_min": 881,
+          "end_min": 1440,
+          "place": "San Antonio, TX",
+          "note": "Off duty"
+        }
+      ],
+      "totals": {
+        "off_duty": 1039,
+        "sleeper": 0,
+        "driving": 281,
+        "on_duty": 120
+      },
+      "remarks": [
+        {
+          "minute": 480,
+          "place": "Dallas, TX",
+          "note": "Departed, driving to pickup"
+        },
+        {
+          "minute": 577,
+          "place": "Waco, TX",
+          "note": "Pickup, loading (1 hr)"
+        },
+        {
+          "minute": 637,
+          "place": "Waco, TX",
+          "note": "Driving to dropoff"
+        },
+        {
+          "minute": 821,
+          "place": "San Antonio, TX",
+          "note": "Dropoff, unloading (1 hr)"
+        },
+        {
+          "minute": 881,
+          "place": "San Antonio, TX",
+          "note": "Off duty"
+        }
+      ],
+      "recap": {
+        "on_duty_today_minutes": 401,
+        "a_minutes": 1121,
+        "b_minutes": 3079,
+        "c_minutes": 1121,
+        "restart_completed": false
+      },
+      "header": {
+        "driver_name": "Alex Rivera",
+        "co_driver_name": "",
+        "carrier_name": "Prairie Line Freight LLC",
+        "main_office_address": "4100 Elm St, Dallas, TX",
+        "home_terminal_address": "Dallas, TX",
+        "truck_number": "T-2041",
+        "trailer_number": "TR-8812",
+        "shipper": "Clearwater Beverage Co.",
+        "commodity": "Bottled water, palletized",
+        "shipping_doc_no": "BOL 118204"
+      },
+      "vehicle": "Truck T-2041 / Trailer TR-8812"
+    }
+  ],
+  "assumptions": [
+    "Property-carrying driver on the 70-hour/8-day schedule, with no adverse driving conditions.",
+    "The driver starts rested (10 or more hours off) with a full tank. The 14-hour window starts at departure.",
+    "Hours already used in the cycle stay in the 8-day window for the whole trip.",
+    "Drive time is the slower of the OSRM estimate and distance divided by 60 mph.",
+    "Fuel is taken at least every 1,000 miles and counts as 30 minutes On Duty (not driving).",
+    "Pickup and dropoff each take 1 hour On Duty (not driving).",
+    "Overnight rest is 10 hours in the sleeper berth. A 34-hour restart is logged Off Duty.",
+    "No split sleeper pairing, no short-haul exception, no personal conveyance.",
+    "Times use the home terminal time zone (America/Chicago) at its UTC offset on the departure date, kept for the whole trip, so every sheet is exactly 24 hours."
+  ],
+  "warnings": []
+}

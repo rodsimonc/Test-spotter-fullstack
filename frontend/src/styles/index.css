@@ -1,0 +1,360 @@
+@import 'tailwindcss';
+@import 'leaflet/dist/leaflet.css';
+
+@theme {
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Brand: deep teal #043d4c, teal #008080, coral #f84960, mint #bcddde. */
+  --color-teal-50: #eef9f9;
+  --color-teal-100: #d5eff0;
+  --color-teal-200: #bcddde;
+  --color-teal-300: #8fc5c8;
+  --color-teal-400: #4fa5a8;
+  --color-teal-500: #1d9092;
+  --color-teal-600: #008080;
+  --color-teal-700: #006868;
+  --color-teal-800: #035560;
+  --color-teal-900: #054a58;
+  --color-teal-950: #043d4c;
+  --color-mint-200: #bcddde;
+
+  /* Coral 500 is for shapes and accents. 600 and up carry white text at AA contrast. */
+  --color-coral-50: #fff3f5;
+  --color-coral-100: #ffe3e8;
+  --color-coral-200: #ffc7d0;
+  --color-coral-300: #ff9dab;
+  --color-coral-400: #fb6d80;
+  --color-coral-500: #f84960;
+  --color-coral-600: #dc3148;
+  --color-coral-700: #b8263c;
+  --color-coral-800: #8f1d30;
+
+  /* Neutrals with a hint of teal. 500 and darker pass AA on white. */
+  --color-ink-25: #f7fafb;
+  --color-ink-50: #f2f7f8;
+  --color-ink-100: #e6eef0;
+  --color-ink-200: #d3e0e3;
+  --color-ink-300: #b5c7cc;
+  --color-ink-400: #8da4ab;
+  --color-ink-500: #4f6d76;
+  --color-ink-600: #44636d;
+  --color-ink-700: #314c55;
+  --color-ink-800: #1d363f;
+  --color-ink-900: #0c2830;
+
+  /* In rem like the built-in breakpoints (68.75rem is 1100px). Mixed units sort out of order. */
+  --breakpoint-desk: 68.75rem;
+
+  --shadow-card: 0 1px 2px rgb(4 61 76 / 0.06), 0 14px 32px -18px rgb(4 61 76 / 0.28);
+  --shadow-pop: 0 2px 6px rgb(4 61 76 / 0.12), 0 18px 40px -12px rgb(4 61 76 / 0.35);
+  --shadow-field: 0 1px 0 rgb(4 61 76 / 0.03);
+
+  --animate-fade-in: fade-in 160ms ease-out both;
+  --animate-pop-in: pop-in 200ms cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+  --animate-drawer-in: drawer-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-rise-in: rise-in 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-toast-in: toast-in 220ms cubic-bezier(0.2, 0.9, 0.3, 1.05) both;
+  --animate-shimmer: shimmer 1.5s linear infinite;
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes drawer-in {
+    from {
+      transform: translateX(32px);
+      opacity: 0;
+    }
+    to {
+      transform: none;
+      opacity: 1;
+    }
+  }
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes toast-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-ink-50);
+    color: var(--color-ink-900);
+    font-family: var(--font-sans);
+    font-feature-settings:
+      'cv11' 1,
+      'ss03' 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.015em;
+  }
+
+  button,
+  [role='button'],
+  summary {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-teal-600);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  .on-dark :focus-visible {
+    outline-color: var(--color-mint-200);
+  }
+
+  ::selection {
+    background: var(--color-teal-200);
+    color: var(--color-teal-950);
+  }
+}
+
+@layer components {
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--color-ink-100) 0%,
+      var(--color-ink-50) 45%,
+      var(--color-ink-100) 90%
+    );
+    background-size: 200% 100%;
+    animation: var(--animate-shimmer);
+    border-radius: 8px;
+  }
+
+  /* Range input with a filled track. --fill is set inline as a percentage. */
+  .range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 24px;
+    background: transparent;
+    cursor: pointer;
+  }
+  .range::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 999px;
+    background: linear-gradient(
+      to right,
+      var(--range-color, var(--color-teal-600)) var(--fill, 0%),
+      var(--color-ink-200) var(--fill, 0%)
+    );
+  }
+  .range::-moz-range-track {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--color-ink-200);
+  }
+  .range::-moz-range-progress {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--range-color, var(--color-teal-600));
+  }
+  .range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    margin-top: -7px;
+    border-radius: 999px;
+    background: white;
+    border: 2px solid var(--range-color, var(--color-teal-600));
+    box-shadow: 0 1px 4px rgb(4 61 76 / 0.3);
+    transition: transform 120ms ease;
+  }
+  .range::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: white;
+    border: 2px solid var(--range-color, var(--color-teal-600));
+    box-shadow: 0 1px 4px rgb(4 61 76 / 0.3);
+  }
+  .range:hover::-webkit-slider-thumb {
+    transform: scale(1.1);
+  }
+  .range:focus-visible {
+    outline: none;
+  }
+  .range:focus-visible::-webkit-slider-thumb {
+    outline: 2px solid var(--color-teal-600);
+    outline-offset: 3px;
+  }
+  .range:focus-visible::-moz-range-thumb {
+    outline: 2px solid var(--color-teal-600);
+    outline-offset: 3px;
+  }
+
+  /* Map */
+  .trip-map {
+    isolation: isolate;
+  }
+  .trip-map .leaflet-container {
+    width: 100%;
+    height: 100%;
+    font-family: var(--font-sans);
+    background: #dde8ea;
+    outline-offset: -2px;
+  }
+  .trip-map .leaflet-tile-pane {
+    filter: saturate(0.55) contrast(0.97) brightness(1.03) hue-rotate(-6deg);
+  }
+  .trip-map.is-picking .leaflet-container,
+  .trip-map.is-picking .leaflet-container .leaflet-interactive {
+    cursor: crosshair;
+  }
+  .trip-map .leaflet-bar {
+    border: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+  }
+  .trip-map .leaflet-bar a {
+    width: 36px;
+    height: 36px;
+    line-height: 36px;
+    color: var(--color-ink-800);
+    border-bottom-color: var(--color-ink-100);
+    transition: background-color 120ms ease;
+  }
+  .trip-map .leaflet-bar a:hover {
+    background: var(--color-teal-50);
+    color: var(--color-teal-950);
+  }
+  .trip-map .leaflet-control-attribution {
+    font-size: 11px;
+    background: rgb(255 255 255 / 0.82);
+    color: var(--color-ink-700);
+    border-radius: 10px 0 0 0;
+    padding: 2px 8px;
+  }
+  .trip-map .leaflet-control-attribution a {
+    color: var(--color-teal-700);
+  }
+  .trip-map .leaflet-popup-content-wrapper {
+    border-radius: 16px;
+    padding: 0;
+    box-shadow: var(--shadow-pop);
+    color: var(--color-ink-900);
+  }
+  .trip-map .leaflet-popup-content {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  .trip-map .leaflet-popup-tip {
+    box-shadow: 0 6px 12px -6px rgb(4 61 76 / 0.3);
+  }
+  .trip-map a.leaflet-popup-close-button {
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    font: 18px/24px var(--font-sans);
+    color: var(--color-ink-500);
+    border-radius: 999px;
+    text-align: center;
+  }
+  .trip-map a.leaflet-popup-close-button:hover {
+    background: var(--color-ink-100);
+    color: var(--color-ink-900);
+  }
+  .trip-map .stop-marker {
+    background: transparent;
+    border: 0;
+  }
+  .trip-map .stop-marker:focus-visible > * {
+    outline: 3px solid var(--color-teal-950);
+    outline-offset: 2px;
+  }
+
+  .marker-pulse {
+    animation: marker-pulse 1.8s ease-out infinite;
+  }
+  @keyframes marker-pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgb(0 128 128 / 0.5);
+    }
+    100% {
+      box-shadow: 0 0 0 14px rgb(0 128 128 / 0);
+    }
+  }
+}
+
+/* Honor the OS setting. Animations still reach their end state, they just skip the travel. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .skeleton {
+    animation: none;
+  }
+}
+
+@media print {
+  body {
+    background: white;
+  }
+}

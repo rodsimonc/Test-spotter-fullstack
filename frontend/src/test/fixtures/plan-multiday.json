@@ -1,0 +1,1035 @@
+{
+  "request": {
+    "current": {
+      "label": "Nashville, Tennessee, United States",
+      "lat": 36.1627,
+      "lon": -86.7816
+    },
+    "pickup": {
+      "label": "Kansas City, Missouri, United States",
+      "lat": 39.0997,
+      "lon": -94.5786
+    },
+    "dropoff": {
+      "label": "Denver, Colorado, United States",
+      "lat": 39.7392,
+      "lon": -104.9903
+    },
+    "cycle_used_hours": 50,
+    "departure": "2026-10-07T01:00",
+    "timezone": "America/Chicago",
+    "header": {
+      "driver_name": "Alex Rivera",
+      "co_driver_name": "",
+      "carrier_name": "Prairie Line Freight LLC",
+      "main_office_address": "1200 Commerce St, Nashville, TN",
+      "home_terminal_address": "Nashville, TN",
+      "truck_number": "T-2041",
+      "trailer_number": "TR-8812",
+      "shipper": "Harlan Foods Inc.",
+      "commodity": "Packaged food, palletized",
+      "shipping_doc_no": "BOL 774512"
+    }
+  },
+  "summary": {
+    "distance_miles": 1173.2,
+    "driving_minutes": 1174,
+    "on_duty_minutes": 1324,
+    "elapsed_minutes": 3994,
+    "depart_at": "2026-10-07T01:00:00-05:00",
+    "arrive_at": "2026-10-09T19:34:00-05:00",
+    "days": 3,
+    "fuel_stops": 1,
+    "breaks": 1,
+    "rests": 1,
+    "restarts": 1,
+    "cycle_used_start_hours": 50,
+    "cycle_used_end_hours": 2.07,
+    "legs": [
+      {
+        "from": "current",
+        "to": "pickup",
+        "distance_miles": 566.4,
+        "duration_minutes": 567,
+        "osrm_duration_minutes": 517
+      },
+      {
+        "from": "pickup",
+        "to": "dropoff",
+        "distance_miles": 606.8,
+        "duration_minutes": 607,
+        "osrm_duration_minutes": 551
+      }
+    ]
+  },
+  "route": {
+    "geometry": [
+      [
+        36.1627,
+        -86.7816
+      ],
+      [
+        36.29571,
+        -86.97423
+      ],
+      [
+        36.41807,
+        -87.16687
+      ],
+      [
+        36.5298,
+        -87.3595
+      ],
+      [
+        36.70498,
+        -87.42405
+      ],
+      [
+        36.8656,
+        -87.4886
+      ],
+      [
+        36.9203,
+        -87.7109
+      ],
+      [
+        36.97074,
+        -87.9332
+      ],
+      [
+        37.0143,
+        -88.1555
+      ],
+      [
+        37.05098,
+        -88.3778
+      ],
+      [
+        37.0834,
+        -88.6001
+      ],
+      [
+        37.15023,
+        -88.8296
+      ],
+      [
+        37.21049,
+        -89.0591
+      ],
+      [
+        37.26148,
+        -89.2886
+      ],
+      [
+        37.3059,
+        -89.5181
+      ],
+      [
+        37.45422,
+        -89.63247
+      ],
+      [
+        37.59359,
+        -89.74683
+      ],
+      [
+        37.724,
+        -89.8612
+      ],
+      [
+        37.91607,
+        -89.92884
+      ],
+      [
+        38.10376,
+        -89.99648
+      ],
+      [
+        38.28436,
+        -90.06412
+      ],
+      [
+        38.45787,
+        -90.13176
+      ],
+      [
+        38.627,
+        -90.1994
+      ],
+      [
+        38.67033,
+        -90.41287
+      ],
+      [
+        38.71259,
+        -90.62634
+      ],
+      [
+        38.75284,
+        -90.83981
+      ],
+      [
+        38.7903,
+        -91.05328
+      ],
+      [
+        38.82449,
+        -91.26675
+      ],
+      [
+        38.85524,
+        -91.48022
+      ],
+      [
+        38.88272,
+        -91.69369
+      ],
+      [
+        38.90741,
+        -91.90716
+      ],
+      [
+        38.93009,
+        -92.12063
+      ],
+      [
+        38.9517,
+        -92.3341
+      ],
+      [
+        38.96926,
+        -92.53865
+      ],
+      [
+        38.9736,
+        -92.7432
+      ],
+      [
+        39.00071,
+        -92.97262
+      ],
+      [
+        39.0261,
+        -93.20205
+      ],
+      [
+        39.04829,
+        -93.43147
+      ],
+      [
+        39.06632,
+        -93.6609
+      ],
+      [
+        39.07982,
+        -93.89032
+      ],
+      [
+        39.08915,
+        -94.11975
+      ],
+      [
+        39.09529,
+        -94.34917
+      ],
+      [
+        39.0997,
+        -94.5786
+      ],
+      [
+        39.06647,
+        -94.7975
+      ],
+      [
+        39.02381,
+        -95.0164
+      ],
+      [
+        38.9717,
+        -95.2353
+      ],
+      [
+        39.02126,
+        -95.46215
+      ],
+      [
+        39.0558,
+        -95.689
+      ],
+      [
+        39.06118,
+        -95.91748
+      ],
+      [
+        39.06242,
+        -96.14596
+      ],
+      [
+        39.05698,
+        -96.37444
+      ],
+      [
+        39.04486,
+        -96.60292
+      ],
+      [
+        39.0286,
+        -96.8314
+      ],
+      [
+        38.99084,
+        -97.0264
+      ],
+      [
+        38.94762,
+        -97.2214
+      ],
+      [
+        38.89669,
+        -97.4164
+      ],
+      [
+        38.8403,
+        -97.6114
+      ],
+      [
+        38.8596,
+        -97.81933
+      ],
+      [
+        38.8762,
+        -98.02727
+      ],
+      [
+        38.88812,
+        -98.2352
+      ],
+      [
+        38.89463,
+        -98.44313
+      ],
+      [
+        38.89647,
+        -98.65107
+      ],
+      [
+        38.8956,
+        -98.859
+      ],
+      [
+        38.89496,
+        -99.0929
+      ],
+      [
+        38.8792,
+        -99.3268
+      ],
+      [
+        38.92613,
+        -99.54557
+      ],
+      [
+        38.97088,
+        -99.76434
+      ],
+      [
+        39.01174,
+        -99.98311
+      ],
+      [
+        39.04772,
+        -100.20189
+      ],
+      [
+        39.07884,
+        -100.42066
+      ],
+      [
+        39.10605,
+        -100.63943
+      ],
+      [
+        39.1311,
+        -100.8582
+      ],
+      [
+        39.26976,
+        -100.9553
+      ],
+      [
+        39.3958,
+        -101.0524
+      ],
+      [
+        39.38993,
+        -101.2725
+      ],
+      [
+        39.37487,
+        -101.4926
+      ],
+      [
+        39.3506,
+        -101.7127
+      ],
+      [
+        39.33732,
+        -101.9909
+      ],
+      [
+        39.3061,
+        -102.2691
+      ],
+      [
+        39.31049,
+        -102.50627
+      ],
+      [
+        39.31182,
+        -102.74343
+      ],
+      [
+        39.30785,
+        -102.9806
+      ],
+      [
+        39.29775,
+        -103.21777
+      ],
+      [
+        39.28236,
+        -103.45493
+      ],
+      [
+        39.2639,
+        -103.6921
+      ],
+      [
+        39.39178,
+        -103.85052
+      ],
+      [
+        39.51383,
+        -104.00895
+      ],
+      [
+        39.62763,
+        -104.16737
+      ],
+      [
+        39.7356,
+        -104.3258
+      ],
+      [
+        39.74597,
+        -104.5473
+      ],
+      [
+        39.74717,
+        -104.7688
+      ],
+      [
+        39.7392,
+        -104.9903
+      ]
+    ],
+    "bounds": [
+      [
+        36.1627,
+        -104.9903
+      ],
+      [
+        39.74717,
+        -86.7816
+      ]
+    ],
+    "leg_end_indices": [
+      42,
+      91
+    ]
+  },
+  "stops": [
+    {
+      "id": "s1",
+      "kind": "start",
+      "title": "Start",
+      "place": "Nashville, TN",
+      "lat": 36.1627,
+      "lon": -86.7816,
+      "mile": 0,
+      "arrive_at": "2026-10-07T01:00:00-05:00",
+      "depart_at": "2026-10-07T01:00:00-05:00",
+      "duration_minutes": 0,
+      "day": 1,
+      "note": "Departure from the current location."
+    },
+    {
+      "id": "s2",
+      "kind": "break",
+      "title": "30-minute break",
+      "place": "19 mi W of Boonville, MO",
+      "lat": 39.0147,
+      "lon": -93.09898,
+      "mile": 479.5,
+      "arrive_at": "2026-10-07T09:00:00-05:00",
+      "depart_at": "2026-10-07T09:30:00-05:00",
+      "duration_minutes": 30,
+      "day": 1,
+      "note": "Required after 8 hours of driving without a 30-minute stop."
+    },
+    {
+      "id": "s3",
+      "kind": "pickup",
+      "title": "Pickup",
+      "place": "Kansas City, MO",
+      "lat": 39.0997,
+      "lon": -94.5786,
+      "mile": 566.4,
+      "arrive_at": "2026-10-07T10:57:00-05:00",
+      "depart_at": "2026-10-07T11:57:00-05:00",
+      "duration_minutes": 60,
+      "day": 1,
+      "note": "Loading takes 1 hour."
+    },
+    {
+      "id": "s4",
+      "kind": "rest",
+      "title": "10-hour rest",
+      "place": "11 mi SE of Wamego, KS",
+      "lat": 39.06057,
+      "lon": -96.22383,
+      "mile": 659.4,
+      "arrive_at": "2026-10-07T13:30:00-05:00",
+      "depart_at": "2026-10-07T23:30:00-05:00",
+      "duration_minutes": 600,
+      "day": 1,
+      "note": "Sleeper berth. Resets the 11-hour and 14-hour limits."
+    },
+    {
+      "id": "s5",
+      "kind": "fuel",
+      "title": "Fuel stop",
+      "place": "10 mi E of Burlington, CO",
+      "lat": 39.3271,
+      "lon": -102.08199,
+      "mile": 999.3,
+      "arrive_at": "2026-10-08T05:10:00-05:00",
+      "depart_at": "2026-10-08T05:40:00-05:00",
+      "duration_minutes": 30,
+      "day": 2,
+      "note": "On duty for 30 minutes, at most 1,000 miles since the last fill."
+    },
+    {
+      "id": "s6",
+      "kind": "restart",
+      "title": "34-hour restart",
+      "place": "11 mi SE of Deer Trail, CO",
+      "lat": 39.47397,
+      "lon": -103.9572,
+      "mile": 1109.2,
+      "arrive_at": "2026-10-08T07:30:00-05:00",
+      "depart_at": "2026-10-09T17:30:00-05:00",
+      "duration_minutes": 2040,
+      "day": 2,
+      "note": "Off duty for 34 hours. The 70-hour cycle starts over."
+    },
+    {
+      "id": "s7",
+      "kind": "dropoff",
+      "title": "Dropoff",
+      "place": "Denver, CO",
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "mile": 1173.2,
+      "arrive_at": "2026-10-09T18:34:00-05:00",
+      "depart_at": "2026-10-09T19:34:00-05:00",
+      "duration_minutes": 60,
+      "day": 3,
+      "note": "Unloading takes 1 hour."
+    },
+    {
+      "id": "s8",
+      "kind": "end",
+      "title": "End of trip",
+      "place": "Denver, CO",
+      "lat": 39.7392,
+      "lon": -104.9903,
+      "mile": 1173.2,
+      "arrive_at": "2026-10-09T19:34:00-05:00",
+      "depart_at": "2026-10-09T19:34:00-05:00",
+      "duration_minutes": 0,
+      "day": 3,
+      "note": "Off duty until midnight."
+    }
+  ],
+  "segments": [
+    {
+      "id": 1,
+      "status": "driving",
+      "kind": "drive",
+      "start_at": "2026-10-07T01:00:00-05:00",
+      "end_at": "2026-10-07T09:00:00-05:00",
+      "minutes": 480,
+      "start_mile": 0,
+      "end_mile": 479.5,
+      "place": "Nashville, TN",
+      "note": "Departed, driving to pickup"
+    },
+    {
+      "id": 2,
+      "status": "off_duty",
+      "kind": "break",
+      "start_at": "2026-10-07T09:00:00-05:00",
+      "end_at": "2026-10-07T09:30:00-05:00",
+      "minutes": 30,
+      "start_mile": 479.5,
+      "end_mile": 479.5,
+      "place": "19 mi W of Boonville, MO",
+      "note": "30-minute break"
+    },
+    {
+      "id": 3,
+      "status": "driving",
+      "kind": "drive",
+      "start_at": "2026-10-07T09:30:00-05:00",
+      "end_at": "2026-10-07T10:57:00-05:00",
+      "minutes": 87,
+      "start_mile": 479.5,
+      "end_mile": 566.4,
+      "place": "19 mi W of Boonville, MO",
+      "note": "Driving to pickup"
+    },
+    {
+      "id": 4,
+      "status": "on_duty",
+      "kind": "pickup",
+      "start_at": "2026-10-07T10:57:00-05:00",
+      "end_at": "2026-10-07T11:57:00-05:00",
+      "minutes": 60,
+      "start_mile": 566.4,
+      "end_mile": 566.4,
+      "place": "Kansas City, MO",
+      "note": "Pickup, loading (1 hr)"
+    },
+    {
+      "id": 5,
+      "status": "driving",
+      "kind": "drive",
+      "start_at": "2026-10-07T11:57:00-05:00",
+      "end_at": "2026-10-07T13:30:00-05:00",
+      "minutes": 93,
+      "start_mile": 566.4,
+      "end_mile": 659.4,
+      "place": "Kansas City, MO",
+      "note": "Driving to dropoff"
+    },
+    {
+      "id": 6,
+      "status": "sleeper",
+      "kind": "rest",
+      "start_at": "2026-10-07T13:30:00-05:00",
+      "end_at": "2026-10-07T23:30:00-05:00",
+      "minutes": 600,
+      "start_mile": 659.4,
+      "end_mile": 659.4,
+      "place": "11 mi SE of Wamego, KS",
+      "note": "10-hour rest, sleeper berth"
+    },
+    {
+      "id": 7,
+      "status": "driving",
+      "kind": "drive",
+      "start_at": "2026-10-07T23:30:00-05:00",
+      "end_at": "2026-10-08T05:10:00-05:00",
+      "minutes": 340,
+      "start_mile": 659.4,
+      "end_mile": 999.3,
+      "place": "11 mi SE of Wamego, KS",
+      "note": "Driving to dropoff"
+    },
+    {
+      "id": 8,
+      "status": "on_duty",
+      "kind": "fuel",
+      "start_at": "2026-10-08T05:10:00-05:00",
+      "end_at": "2026-10-08T05:40:00-05:00",
+      "minutes": 30,
+      "start_mile": 999.3,
+      "end_mile": 999.3,
+      "place": "10 mi E of Burlington, CO",
+      "note": "Fuel stop (30 min)"
+    },
+    {
+      "id": 9,
+      "status": "driving",
+      "kind": "drive",
+      "start_at": "2026-10-08T05:40:00-05:00",
+      "end_at": "2026-10-08T07:30:00-05:00",
+      "minutes": 110,
+      "start_mile": 999.3,
+      "end_mile": 1109.2,
+      "place": "10 mi E of Burlington, CO",
+      "note": "Driving to dropoff"
+    },
+    {
+      "id": 10,
+      "status": "off_duty",
+      "kind": "restart",
+      "start_at": "2026-10-08T07:30:00-05:00",
+      "end_at": "2026-10-09T17:30:00-05:00",
+      "minutes": 2040,
+      "start_mile": 1109.2,
+      "end_mile": 1109.2,
+      "place": "11 mi SE of Deer Trail, CO",
+      "note": "34-hour restart"
+    },
+    {
+      "id": 11,
+      "status": "driving",
+      "kind": "drive",
+      "start_at": "2026-10-09T17:30:00-05:00",
+      "end_at": "2026-10-09T18:34:00-05:00",
+      "minutes": 64,
+      "start_mile": 1109.2,
+      "end_mile": 1173.2,
+      "place": "11 mi SE of Deer Trail, CO",
+      "note": "Driving to dropoff"
+    },
+    {
+      "id": 12,
+      "status": "on_duty",
+      "kind": "dropoff",
+      "start_at": "2026-10-09T18:34:00-05:00",
+      "end_at": "2026-10-09T19:34:00-05:00",
+      "minutes": 60,
+      "start_mile": 1173.2,
+      "end_mile": 1173.2,
+      "place": "Denver, CO",
+      "note": "Dropoff, unloading (1 hr)"
+    }
+  ],
+  "logs": [
+    {
+      "day": 1,
+      "date": "2026-10-07",
+      "from_place": "Nashville, TN",
+      "to_place": "4 mi E of Junction City, KS",
+      "total_miles_driving": 689.4,
+      "total_mileage_today": 689.4,
+      "entries": [
+        {
+          "status": "off_duty",
+          "kind": "idle",
+          "start_min": 0,
+          "end_min": 60,
+          "place": "Nashville, TN",
+          "note": "Off duty"
+        },
+        {
+          "status": "driving",
+          "kind": "drive",
+          "start_min": 60,
+          "end_min": 540,
+          "place": "Nashville, TN",
+          "note": "Departed, driving to pickup"
+        },
+        {
+          "status": "off_duty",
+          "kind": "break",
+          "start_min": 540,
+          "end_min": 570,
+          "place": "19 mi W of Boonville, MO",
+          "note": "30-minute break"
+        },
+        {
+          "status": "driving",
+          "kind": "drive",
+          "start_min": 570,
+          "end_min": 657,
+          "place": "19 mi W of Boonville, MO",
+          "note": "Driving to pickup"
+        },
+        {
+          "status": "on_duty",
+          "kind": "pickup",
+          "start_min": 657,
+          "end_min": 717,
+          "place": "Kansas City, MO",
+          "note": "Pickup, loading (1 hr)"
+        },
+        {
+          "status": "driving",
+          "kind": "drive",
+          "start_min": 717,
+          "end_min": 810,
+          "place": "Kansas City, MO",
+          "note": "Driving to dropoff"
+        },
+        {
+          "status": "sleeper",
+          "kind": "rest",
+          "start_min": 810,
+          "end_min": 1410,
+          "place": "11 mi SE of Wamego, KS",
+          "note": "10-hour rest, sleeper berth"
+        },
+        {
+          "status": "driving",
+          "kind": "drive",
+          "start_min": 1410,
+          "end_min": 1440,
+          "place": "11 mi SE of Wamego, KS",
+          "note": "Driving to dropoff"
+        }
+      ],
+      "totals": {
+        "off_duty": 90,
+        "sleeper": 600,
+        "driving": 690,
+        "on_duty": 60
+      },
+      "remarks": [
+        {
+          "minute": 60,
+          "place": "Nashville, TN",
+          "note": "Departed, driving to pickup"
+        },
+        {
+          "minute": 540,
+          "place": "19 mi W of Boonville, MO",
+          "note": "30-minute break"
+        },
+        {
+          "minute": 570,
+          "place": "19 mi W of Boonville, MO",
+          "note": "Driving to pickup"
+        },
+        {
+          "minute": 657,
+          "place": "Kansas City, MO",
+          "note": "Pickup, loading (1 hr)"
+        },
+        {
+          "minute": 717,
+          "place": "Kansas City, MO",
+          "note": "Driving to dropoff"
+        },
+        {
+          "minute": 810,
+          "place": "11 mi SE of Wamego, KS",
+          "note": "10-hour rest, sleeper berth"
+        },
+        {
+          "minute": 1410,
+          "place": "11 mi SE of Wamego, KS",
+          "note": "Driving to dropoff"
+        }
+      ],
+      "recap": {
+        "on_duty_today_minutes": 750,
+        "a_minutes": 3750,
+        "b_minutes": 450,
+        "c_minutes": 3750,
+        "restart_completed": false
+      },
+      "header": {
+        "driver_name": "Alex Rivera",
+        "co_driver_name": "",
+        "carrier_name": "Prairie Line Freight LLC",
+        "main_office_address": "1200 Commerce St, Nashville, TN",
+        "home_terminal_address": "Nashville, TN",
+        "truck_number": "T-2041",
+        "trailer_number": "TR-8812",
+        "shipper": "Harlan Foods Inc.",
+        "commodity": "Packaged food, palletized",
+        "shipping_doc_no": "BOL 774512"
+      },
+      "vehicle": "Truck T-2041 / Trailer TR-8812"
+    },
+    {
+      "day": 2,
+      "date": "2026-10-08",
+      "from_place": "4 mi E of Junction City, KS",
+      "to_place": "11 mi SE of Deer Trail, CO",
+      "total_miles_driving": 419.9,
+      "total_mileage_today": 419.9,
+      "entries": [
+        {
+          "status": "driving",
+          "kind": "drive",
+          "start_min": 0,
+          "end_min": 310,
+          "place": "4 mi E of Junction City, KS",
+          "note": "Driving to dropoff"
+        },
+        {
+          "status": "on_duty",
+          "kind": "fuel",
+          "start_min": 310,
+          "end_min": 340,
+          "place": "10 mi E of Burlington, CO",
+          "note": "Fuel stop (30 min)"
+        },
+        {
+          "status": "driving",
+          "kind": "drive",
+          "start_min": 340,
+          "end_min": 450,
+          "place": "10 mi E of Burlington, CO",
+          "note": "Driving to dropoff"
+        },
+        {
+          "status": "off_duty",
+          "kind": "restart",
+          "start_min": 450,
+          "end_min": 1440,
+          "place": "11 mi SE of Deer Trail, CO",
+          "note": "34-hour restart"
+        }
+      ],
+      "totals": {
+        "off_duty": 990,
+        "sleeper": 0,
+        "driving": 420,
+        "on_duty": 30
+      },
+      "remarks": [
+        {
+          "minute": 310,
+          "place": "10 mi E of Burlington, CO",
+          "note": "Fuel stop (30 min)"
+        },
+        {
+          "minute": 340,
+          "place": "10 mi E of Burlington, CO",
+          "note": "Driving to dropoff"
+        },
+        {
+          "minute": 450,
+          "place": "11 mi SE of Deer Trail, CO",
+          "note": "34-hour restart"
+        }
+      ],
+      "recap": {
+        "on_duty_today_minutes": 450,
+        "a_minutes": 4200,
+        "b_minutes": 0,
+        "c_minutes": 4200,
+        "restart_completed": false
+      },
+      "header": {
+        "driver_name": "Alex Rivera",
+        "co_driver_name": "",
+        "carrier_name": "Prairie Line Freight LLC",
+        "main_office_address": "1200 Commerce St, Nashville, TN",
+        "home_terminal_address": "Nashville, TN",
+        "truck_number": "T-2041",
+        "trailer_number": "TR-8812",
+        "shipper": "Harlan Foods Inc.",
+        "commodity": "Packaged food, palletized",
+        "shipping_doc_no": "BOL 774512"
+      },
+      "vehicle": "Truck T-2041 / Trailer TR-8812"
+    },
+    {
+      "day": 3,
+      "date": "2026-10-09",
+      "from_place": "11 mi SE of Deer Trail, CO",
+      "to_place": "Denver, CO",
+      "total_miles_driving": 64,
+      "total_mileage_today": 64,
+      "entries": [
+        {
+          "status": "off_duty",
+          "kind": "restart",
+          "start_min": 0,
+          "end_min": 1050,
+          "place": "11 mi SE of Deer Trail, CO",
+          "note": "34-hour restart"
+        },
+        {
+          "status": "driving",
+          "kind": "drive",
+          "start_min": 1050,
+          "end_min": 1114,
+          "place": "11 mi SE of Deer Trail, CO",
+          "note": "Driving to dropoff"
+        },
+        {
+          "status": "on_duty",
+          "kind": "dropoff",
+          "start_min": 1114,
+          "end_min": 1174,
+          "place": "Denver, CO",
+          "note": "Dropoff, unloading (1 hr)"
+        },
+        {
+          "status": "off_duty",
+          "kind": "idle",
+          "start_min": 1174,
+          "end_min": 1440,
+          "place": "Denver, CO",
+          "note": "Off duty"
+        }
+      ],
+      "totals": {
+        "off_duty": 1316,
+        "sleeper": 0,
+        "driving": 64,
+        "on_duty": 60
+      },
+      "remarks": [
+        {
+          "minute": 1050,
+          "place": "11 mi SE of Deer Trail, CO",
+          "note": "Driving to dropoff"
+        },
+        {
+          "minute": 1114,
+          "place": "Denver, CO",
+          "note": "Dropoff, unloading (1 hr)"
+        },
+        {
+          "minute": 1174,
+          "place": "Denver, CO",
+          "note": "Off duty"
+        }
+      ],
+      "recap": {
+        "on_duty_today_minutes": 124,
+        "a_minutes": 124,
+        "b_minutes": 4076,
+        "c_minutes": 124,
+        "restart_completed": true
+      },
+      "header": {
+        "driver_name": "Alex Rivera",
+        "co_driver_name": "",
+        "carrier_name": "Prairie Line Freight LLC",
+        "main_office_address": "1200 Commerce St, Nashville, TN",
+        "home_terminal_address": "Nashville, TN",
+        "truck_number": "T-2041",
+        "trailer_number": "TR-8812",
+        "shipper": "Harlan Foods Inc.",
+        "commodity": "Packaged food, palletized",
+        "shipping_doc_no": "BOL 774512"
+      },
+      "vehicle": "Truck T-2041 / Trailer TR-8812"
+    }
+  ],
+  "assumptions": [
+    "Property-carrying driver on the 70-hour/8-day schedule, with no adverse driving conditions.",
+    "The driver starts rested (10 or more hours off) with a full tank. The 14-hour window starts at departure.",
+    "Hours already used in the cycle stay in the 8-day window for the whole trip.",
+    "Drive time is the slower of the OSRM estimate and distance divided by 60 mph.",
+    "Fuel is taken at least every 1,000 miles and counts as 30 minutes On Duty (not driving).",
+    "Pickup and dropoff each take 1 hour On Duty (not driving).",
+    "Overnight rest is 10 hours in the sleeper berth. A 34-hour restart is logged Off Duty.",
+    "No split sleeper pairing, no short-haul exception, no personal conveyance.",
+    "Times use the home terminal time zone (America/Chicago) at its UTC offset on the departure date, kept for the whole trip, so every sheet is exactly 24 hours."
+  ],
+  "warnings": [
+    "The 70-hour cycle runs out on this trip, so a 34-hour restart was added.",
+    "This trip spans 3 days, so there are 3 log sheets."
+  ]
+}

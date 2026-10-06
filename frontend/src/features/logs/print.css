@@ -1,0 +1,48 @@
+/*
+ * Printing the daily logs: one sheet per Letter page, nothing else on paper.
+ * `#log-print-root` holds a copy of every sheet. It stays hidden until the browser prints.
+ */
+
+.log-print-root {
+  display: none;
+}
+
+@page {
+  size: letter portrait;
+  margin: 0.25in;
+}
+
+@media print {
+  .log-viewer-screen {
+    display: none;
+  }
+
+  .log-print-root {
+    display: block;
+  }
+
+  /* The printed form is the same 850 x 1100 sheet, so it fills the 8 x 10.5 inch frame by width alone. */
+  .log-print-page {
+    break-after: page;
+    break-inside: avoid;
+    page-break-after: always;
+    page-break-inside: avoid;
+  }
+
+  .log-print-page:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  .log-print-page > svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .log-print-root,
+  .log-print-root * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
