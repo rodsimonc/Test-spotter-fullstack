@@ -15,7 +15,10 @@ Press **Try an example** to plan Dallas to Memphis to Denver with 24 hours alrea
   <img src="docs/img/phone.png" alt="The results on a phone, 390 pixels wide" width="28%">
 </p>
 
-![The day-by-day itinerary with fuel stops, breaks and rests](docs/img/itinerary.png)
+<p>
+  <img src="docs/img/itinerary.png" alt="The day-by-day itinerary with fuel stops, breaks and rests" width="48%">
+  <img src="docs/img/directions.png" alt="Road-by-road directions for both legs, merged by road" width="48%">
+</p>
 
 ## What it does
 
