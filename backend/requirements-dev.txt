@@ -1,0 +1,12 @@
+# Everything needed to run the backend tests and linters. Install from the backend folder:
+#   pip install -r requirements-dev.txt
+-r ../requirements.txt
+
+coverage==7.16.2
+hypothesis==6.168.5
+pip-audit==2.10.1
+pytest==9.1.1
+pytest-cov==7.1.0
+pytest-django==4.14.0
+responses==0.26.3
+ruff==0.16.10

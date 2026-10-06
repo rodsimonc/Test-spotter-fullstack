@@ -1,0 +1,14 @@
+target-version = "py312"
+line-length = 120
+extend-exclude = ["**/migrations/*.py"]
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP", "C4", "SIM", "DJ", "S"]
+
+[lint.per-file-ignores]
+# Tests assert, build throwaway passwords and use the random module on purpose.
+"tests/**" = ["S"]
+# The test settings carry a throwaway secret key on purpose.
+"config/test_settings.py" = ["S105"]
+# User-facing sentences stay on one line so you can grep for them.
+"apps/planner/assemble.py" = ["E501"]
