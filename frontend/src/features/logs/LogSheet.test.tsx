@@ -178,6 +178,8 @@ describe('LogSheet', () => {
       '3. Driving',
       'Remarks',
       'Shipping Documents:',
+      'I certify that these entries are true and correct.',
+      'signature in full',
       'Recap:',
       '70 Hour/',
       '60 Hour/',
@@ -187,6 +189,13 @@ describe('LogSheet', () => {
     }
     expect(svg).toHaveTextContent('Noon')
     expect(svg).toHaveTextContent('Mid-')
+  })
+
+  it('leaves the driver signature line blank for the driver to sign', () => {
+    render(<LogSheet log={multiDayPlan.logs[0]} />)
+    const line = screen.getByTestId('log-signature')
+    expect(line).toBeInTheDocument()
+    expect(line).not.toHaveTextContent(/S/)
   })
 
   it('fills only the 70-hour side of the recap', () => {

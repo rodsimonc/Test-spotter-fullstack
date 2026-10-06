@@ -145,6 +145,26 @@ export function ShippingBlock({ log }: { log: DailyLog }) {
         Shipper &amp; Commodity
       </T>
 
+      <T x={470} y={832} size={10} bold>
+        Driver&apos;s certification:
+      </T>
+      <T x={470} y={856} size={8.5} bold>
+        I certify that these entries are true and correct.
+      </T>
+      {/* Left blank on purpose: the driver signs it. */}
+      <line
+        data-testid="log-signature"
+        x1={470}
+        x2={818}
+        y1={908}
+        y2={908}
+        stroke={PRINT}
+        strokeWidth={0.9}
+      />
+      <T x={470} y={919} size={8.5} bold>
+        Driver&apos;s signature in full
+      </T>
+
       <T x={VIEW_WIDTH / 2} y={944} size={8.5} bold anchor="middle">
         Enter name of place you reported and where released from work and when and where each change
         of duty occurred.
