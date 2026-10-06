@@ -27,11 +27,22 @@ jobs:
           # Scans the whole history, since a secret removed in a later commit is still leaked.
           fetch-depth: 0
 
-      # Free for repositories owned by a person. An organization repository needs GITLEAKS_LICENSE.
-      - uses: gitleaks/gitleaks-action@v2
+      # The official action works out a commit range from the push event, and that breaks on the
+      # first push of a repo (the root commit has no parent). Running the pinned binary over the
+      # whole history is simpler and needs no license.
+      - name: Install gitleaks
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+          VERSION: '8.24.3'
+        run: |
+          base="https://github.com/gitleaks/gitleaks/releases/download/v${VERSION}"
+          cd "$RUNNER_TEMP"
+          curl -sSfL -o gitleaks.tar.gz "${base}/gitleaks_${VERSION}_linux_x64.tar.gz"
+          curl -sSfL -o checksums.txt "${base}/gitleaks_${VERSION}_checksums.txt"
+          sha256sum --check --ignore-missing checksums.txt
+          tar -xzf gitleaks.tar.gz gitleaks
+
+      - name: Scan the full history
+        run: '"$RUNNER_TEMP/gitleaks" detect --source . --redact --verbose --exit-code 2'
 
   python-deps:
     name: Python dependency audit

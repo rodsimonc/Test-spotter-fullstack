@@ -10,6 +10,10 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: 'deps(py)'
+    # Django 5.2 is the long-term support release this project targets. A new major needs its own pass.
+    ignore:
+      - dependency-name: django
+        update-types: [version-update:semver-major]
     groups:
       python-minor-and-patch:
         update-types: [minor, patch]
@@ -23,6 +27,10 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: 'deps(py-dev)'
+    # Django 5.2 is the long-term support release this project targets. A new major needs its own pass.
+    ignore:
+      - dependency-name: django
+        update-types: [version-update:semver-major]
     groups:
       python-dev-minor-and-patch:
         update-types: [minor, patch]
@@ -36,6 +44,9 @@ updates:
     commit-message:
       prefix: 'deps(js)'
     groups:
+      # typescript-eslint caps the TypeScript version it accepts, so the two have to move together.
+      typescript-tooling:
+        patterns: ['typescript', 'typescript-eslint', '@typescript-eslint/*']
       npm-minor-and-patch:
         update-types: [minor, patch]
 
